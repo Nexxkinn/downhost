@@ -1,0 +1,39 @@
+interface Item {
+    id:Int!
+    name:String!
+    status:String!
+    progress:String
+}
+type Bulk implements Item {
+    id:Int!
+    name:String!
+    status:String!
+    progress:String
+    size:Int
+    downloaded:Int
+}
+
+type Pages implements Item {
+    id:Int!
+    name:String!
+    status:String!
+    progress:String
+    pages:Int
+    downloadedPages:Int
+}
+
+type Query {
+    getlist: [Item]
+}
+
+enum DownMode {
+    DOWNLOAD
+    PAUSE
+    RESTART
+}
+
+type Mutation {
+    add(url:String):Boolean
+    delete(id:Int):Boolean
+    set(id:Int,mode:DownMode):Boolean
+}
