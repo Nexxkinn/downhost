@@ -1,3 +1,4 @@
 .vscode
 token.json
 *.zip
+*.sqlite

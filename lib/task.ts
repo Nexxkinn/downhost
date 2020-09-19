@@ -27,20 +27,34 @@ export class Task {
 }
 
 function run(task:Task){
-    const pto = new Promise(async() => {
+    const pto = new Promise(async(rej) => {
         const { url, db, action } = task
         switch(action){
             case ActionMode.START: {
                 const { metadata, download } = await resolve(task.url);
-                const { type, service,uid,title} = metadata
+                const { type, service,uid,title } = metadata;
+
                 db.query("INSERT INTO download(__typename,service,uid,name,status) VALUES(?,?,?,?,?)",[type,service,uid,title,'queueing'])
                 const dow:Download = {
                     meta: metadata,
-                    filename: `[${metadata.uid}]${metadata.title}.zip`,
-                    db:task.db
+                    path: `[${metadata.uid}] ${metadata.title}.zip`,
                 }
 
-                await download(dow);
+                const res = await download(dow);
+                if(!res.body) return rej('unable to download file');
+
+                let size = Number(res.headers.get('content-length'));
+                db.query("UPDATE download SET __typename=?,size=?,status=? WHERE service=? AND uid=? ",['Bulk',size,'Downloading',service,uid]);
+
+                const file = await Deno.create(dow.path);
+                let   len = 0;
+                for await (const chunk of res.body) {
+                    file.writeSync(chunk);
+                    len += chunk.length;
+                    db.query("UPDATE download SET downloaded=? WHERE service=? AND uid=? ",[len,service,uid]);
+                }
+                db.query("UPDATE download SET status=? WHERE service=? AND uid=? ",['finished',service,uid]);
+
                 TaskList.splice(TaskList.indexOf(pto),1);
                 break;
             }
@@ -63,6 +77,11 @@ async function resolve(link:string){
             metadata = await script.hnx.metadata(link);
             download = script.hnx.download;
             return { metadata, download };
+        case 'rlf641xlh1d6fnstkkfa43szby...':
+            metadata = await script.chk.metadata(link);
+            download = script.chk.download;
+            return { metadata, download };
+            break;
         default:
             throw new Error(`unable to resolve ${link}`);
     }

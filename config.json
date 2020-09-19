@@ -1,7 +1,5 @@
 {
-    "name": "downhost",
-    "icon": "",
-    "version": "0.0.1",
-    "desc": "download to host.",
-    "hosturl": "/"
+    "hostname":"localhost",
+    "port":8080,
+    "baseurl": "/"
 }

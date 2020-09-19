@@ -3,7 +3,7 @@ import { de, grab, Meta, Download, DownType } from "./_deps.ts";
 const token = de("klcjv4xqjv9a0cxhk1copcsrbe4ju41rbk96csn...");
 const srvc  = de("kla642xlkh9ou0xerb9oo33k...");
 
-export async function download({meta, filename, db}:Download) {
+export async function download({meta}:Download):Promise<Response> {
 
     // debug
     const {u,p} = JSON.parse(Deno.readTextFileSync("token.json"));
@@ -13,19 +13,7 @@ export async function download({meta, filename, db}:Download) {
         method:"GET",
         headers: { "cookie": cookie }
     });
-    
-    let size = Number(res.headers.get('content-length'));
-    db.query("UPDATE download SET __typename=?,size=?,status=? WHERE service=? AND uid=? ",['Bulk',size,'Downloading',srvc,meta.uid]);
-    if(!res.body) return;
-
-    const file = await Deno.create(filename);
-    let   len = 0;
-    for await (const chunk of res.body) {
-        file.writeSync(chunk);
-        len += chunk.length;
-        db.query("UPDATE download SET downloaded=? WHERE service=? AND uid=? ",[len,srvc,meta.uid]);
-    }
-    db.query("UPDATE download SET status=? WHERE service=? AND uid=? ",['finished',srvc,meta.uid]);
+    return res;
 }
 
 export async function metadata(link: string):Promise<Meta> {

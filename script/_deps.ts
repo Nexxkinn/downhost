@@ -10,9 +10,8 @@ export type Meta = {
 }
 
 export type Download = {
-    filename: string,
+    path: string,
     meta:Meta,
-    db: DB,
 }
 
 export enum DownType {
