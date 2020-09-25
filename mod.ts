@@ -1,4 +1,4 @@
-import { Application, Router, DB } from './deps.ts';
+import { Application, Router, DB, contentType } from './deps.ts';
 import { index, graphql } from './api/_mod.ts';
 import { info } from './index.ts';
 
@@ -46,6 +46,7 @@ router
     })
     .get('/static/:file', async (ctx) => {
         ctx.response.body = await Deno.readTextFile(`client/static/${ctx.params.file}`);
+        ctx.response.type = contentType(ctx.params.file || '');
     })
 
 const app = new Application();

@@ -16,6 +16,7 @@ export const React = {
 declare global {
   namespace JSX {
     interface IntrinsicElements {
+      [key:string]:any;
       button: any;
       div: any;
       h1: any;

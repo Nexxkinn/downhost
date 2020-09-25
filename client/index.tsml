@@ -5,46 +5,50 @@
     <meta charset="UTF-8">
     <base href="/" target="_blank">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="static/fast-components.min.js"></script>
     <script src="static/index.js"></script>
     <title>{@title}</title>
     <style>
-        /* #list {
-            display: table;
+        :root {
+            --background-color: #181818;
+            --navbar-height: 94px;
+            --section-height-spacing: 100px 0px;
+            --section-height-spacing-mobile: 50px 0px;
         }
 
-        #list>div {
-            display: table-row;
+        html,
+        body {
+            background-color: var(--background-color);
+            font-family: SegoeUIVF, Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif;
         }
 
-        #list>div>div {
-            display: table-cell;
-        } */
+        .form {
+            display: inline-flex;
+            place-items: flex-end;
+        }
 
+        .itemname {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
 <body>
-    {@body}
-    <div>
-        <input type="text" name="url" id="url">
-        <input type="button" value="submit" id="submit">
-    </div>
-    <table id="list">
-        <thead>
-            <tr>
-                <th>name</th>
-                <th>%</th>
-                <th>status</th>
-            </tr>
-        </thead>
-        <tbody id="item">
-            <tr>
-                <td>sjdfhjasdfjkasd</td>
-                <td>90</td>
-                <td>downloading</td>
-            </tr>
-        </tbody>
-    </table>
+
+    <fast-design-system-provider use-defaults>
+        <div class="form">
+            <fast-text-field appearance="outline" placeholder="https://" autofocus id="url">Downhost
+            </fast-text-field>
+            <fast-button id="submit">Submit</fast-button>
+        </div>
+        <div>
+            <fast-accordion id="list">
+            </fast-accordion>
+        </div>
+    </fast-design-system-provider>
 </body>
 
 </html>
