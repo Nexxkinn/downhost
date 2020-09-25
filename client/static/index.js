@@ -5,6 +5,7 @@ async function init() {
     const submit = document.getElementById('submit');
     submit.onclick = async (_) => {
         const url = document.getElementById('url').value;
+        if (!url) return;
         const query = `mutation add($www:String) {
             add(url:$www)
         }
@@ -17,7 +18,7 @@ async function init() {
 }
 
 async function refreshList() {
-    const query = `query { getlist { ... { name progress status } } }`
+    const query = `query { getlist { ... { id name progress status } } }`
     const res = await fetch_gql({query});
     const list = res.data.getlist;
 
@@ -39,11 +40,11 @@ async function fetch_gql({query,variables={}}){
 }
 
 function updatelist(list){
-    const table = document.getElementById('item');
-    table.innerHTML = ''
+    const table = document.getElementById('list');
+    table.innerHTML = '';
     for(const item of list){
-        const {name, progress, status} = item;
-        table.appendChild(addItem({name,percent:progress,status}))
+        const {id, name, progress, status} = item;
+        table.appendChild(addItem({id:'item_'+id, name,percent:progress,status}))
     }
 }
 
@@ -51,16 +52,15 @@ async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function addItem({name,percent='',status=''}){
-    const item = document.createElement('tr');
-    const divname = document.createElement('td');
-    const divperc = document.createElement('td');
-    const divstat = document.createElement('td');
+function addItem({id,name,percent='',status=''}){
+    const item = document.createElement('fast-accordion-item');
+    const divname = document.createElement('span');
 
+    divname.slot = "heading";
+    divname.className = "itemname"
     divname.append(name);
-    divperc.append(percent);
-    divstat.append(status);
 
-    item.append(divname,divperc,divstat);
+    item.id = id;
+    item.append(divname,percent,status);
     return item;
 }

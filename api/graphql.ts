@@ -24,10 +24,10 @@ export default async function handler(req: Request, db: DB) {
 
 function getlist(_: any, { db }: { db: DB }) {
     const list = new Array();
-    const res = db.query("SELECT __typename,uid,name,status,size,downloaded FROM download");
-    for (const [__typename,uid,name,status,size,downloaded] of res) {
-        const progress = size && downloaded ? ( (downloaded / size) * 100).toFixed(2) : "0";
-        list.push({ __typename, uid, name, status, progress })
+    const res = db.query("SELECT __typename,id, uid,name,status,size,downloaded FROM download");
+    for (const [__typename, id, uid, name, status, size, downloaded] of res) {
+        const progress = size && downloaded ? ((downloaded / size) * 100).toFixed(2) : "0";
+        list.push({ __typename, id, uid, name, status, progress })
     }
     return list;
 }

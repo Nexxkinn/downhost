@@ -4,7 +4,8 @@ const ten = new TextEncoder();
 const tde = new TextDecoder();
 
 export function de(text: string) {
-    const input = text.substr(0,text.length-3);
+    if(!text) return String();
+    const input = text.endsWith('...') ? text.substr(0,text.length-3) : text;
     const length = input.length
 
     let bits = 0

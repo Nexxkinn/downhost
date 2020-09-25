@@ -1,5 +1,5 @@
-import {en,de} from './_mod.ts';
-import * as script from '../script/_mod.ts';
+import { en,de } from './_mod.ts';
+import { service } from '../script/_mod.ts';
 import { Download, Meta } from "../script/_deps.ts";
 import { DB } from "../api/_deps.ts";
 
@@ -70,19 +70,10 @@ function run(task:Task){
 async function resolve(link:string){
     const url = new URL(link);
     const hostname = en(url.hostname);
-    let metadata:Meta;
-    let download;
-    switch(hostname){
-        case 'kla642xlkh9ou0xerb9oo33k...':
-            metadata = await script.hnx.metadata(link);
-            download = script.hnx.download;
-            return { metadata, download };
-        case 'rlf641xlh1d6fnstkkfa43szby...':
-            metadata = await script.chk.metadata(link);
-            download = script.chk.download;
-            return { metadata, download };
-            break;
-        default:
-            throw new Error(`unable to resolve ${link}`);
-    }
+    const srvc = service(hostname);
+    if (!srvc) throw new Error(`Unable to resolve: ${link}`);
+    const metadata:Meta = await srvc.metadata(link);
+    const download      = srvc.download;
+    console.log(metadata);
+    return { metadata,download };
 }

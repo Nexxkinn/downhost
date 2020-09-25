@@ -11,6 +11,7 @@ const db = new DB('database.sqlite');
 db.query(`CREATE TABLE IF NOT EXISTS 
     download (
         __typename TEXT NOT NULL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         service TEXT NOT NULL,
         uid TEXT NOT NULL,
         filename TEXT,
@@ -19,7 +20,7 @@ db.query(`CREATE TABLE IF NOT EXISTS
         status TEXT,
         size INTERGER,
         downloaded INTERGER,
-        PRIMARY KEY (service, uid)
+        UNIQUE (service, uid)
         )`);
 db.query(`CREATE TABLE IF NOT EXISTS 
     credential (
