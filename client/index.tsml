@@ -20,11 +20,15 @@
         body {
             background-color: var(--background-color);
             font-family: SegoeUIVF, Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1em;
         }
 
         .form {
             display: inline-flex;
             place-items: flex-end;
+            margin-bottom: 12px;
         }
 
         .itemname {
