@@ -74,6 +74,6 @@ async function resolve(link:string){
     if (!srvc) throw new Error(`Unable to resolve: ${link}`);
     const metadata:Meta = await srvc.metadata(link);
     const download      = srvc.download;
-    console.log(metadata);
+    //console.log(metadata);
     return { metadata,download };
 }
