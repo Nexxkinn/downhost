@@ -3,8 +3,10 @@ window.onload = init;
 async function init() {
 
     const submit = document.getElementById('submit');
+    const field  = document.getElementById('field');
+
     submit.onclick = async (_) => {
-        const url = document.getElementById('url').value;
+        const url = field.value;
         if (!url) return;
         const query = `mutation add($www:String) {
             add(url:$www)
@@ -12,7 +14,12 @@ async function init() {
         `
         const variables = { www: url }
         const gql = await fetch_gql({ query, variables });
+        field.value = "";
         console.log(gql);
+    }
+
+    field.valueChanged = (_) => {
+        submit.hidden = !field.value.startsWith('http');
     }
     await refreshList();
 }
@@ -65,25 +72,14 @@ async function sleep(ms) {
 
 function createItem({ id, name, percent = '', status = '' }) {
     const item = document.createElement('fast-accordion-item');
-    const head = document.createElement('span');
-    const title = document.createElement('div');
-    const perc = document.createElement('div');
-    const stat = document.createElement('div');
-
-    perc.name = 'prog';
-    perc.append(percent);
-    
-    stat.name = 'stat';
-    stat.append(status);
-
-    title.append(name);
-
-    head.slot = "heading";
-    head.className = "itemname";
-    head.append(title);
+    const head = `<span slot="heading" class="itemname">
+                    <div> ${name} </div>
+                    </span>`;
+    const perc = `<div name="prog">${percent}</div>`;
+    const stat = `<div name="stat">${status}</div>`;
 
     item.name = id;
-    item.append(head, perc, stat);
+    item.innerHTML = "".concat(head,perc,stat);
     return item;
 }
 

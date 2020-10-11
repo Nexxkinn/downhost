@@ -1,5 +1,6 @@
 {
     "hostname":"localhost",
     "port":8080,
-    "baseurl": "/"
+    "baseurl": "default",
+    "basedir":"default"
 }

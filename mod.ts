@@ -1,10 +1,26 @@
 import { Application, Router, DB, contentType } from './deps.ts';
 import { index, graphql } from './api/_mod.ts';
 import { info } from './index.ts';
+import { log } from './lib/_mod.ts';
 
 const config = JSON.parse(await Deno.readTextFile('config.json'));
-console.log(`### ${info.name} version ${info.version} ###`);
-console.log('Downloading static files');
+console.log(
+`#=============================#
+#                             #
+#         HHH     HHH         #
+#         HHH     HHH         #
+#         HHHHHHHHHHH         #
+#         HHH     HHH         #
+#     HHHHHHH     HHHHHHH     #
+#       HHH         HHH       #
+#         HHH     HHH         #
+#           HHH HHH           #
+#             HHH             #
+#                             #
+#=============================#`)
+log(`Version : ${info.version}`)
+log('Downloading static files');
+log('Initialize database...');
 
 const router = new Router();
 const db = new DB('database.sqlite');
@@ -35,6 +51,10 @@ db.query(`CREATE TABLE IF NOT EXISTS
         pass TEXT,
         access TEXT
         )`);
+db.query(`CREATE TABLE IF NOT EXISTS 
+    library (
+        path TEXT
+        )`);
 
 // dummy
 // db.query("INSERT INTO download(__typename,name,status) VALUES('Bulk','test','paused')")
@@ -46,8 +66,11 @@ router
         ctx.response.body = await graphql(ctx.request,db);
     })
     .get('/static/:file', async (ctx) => {
-        ctx.response.body = await Deno.readTextFile(`client/static/${ctx.params.file}`);
+        ctx.response.body = await Deno.readFile(`client/static/${ctx.params.file}`);
         ctx.response.type = contentType(ctx.params.file || '');
+    })
+    .get('/reader/:id', async (ctx) => {
+        //ctx.response.body = await 
     })
 
 const app = new Application();

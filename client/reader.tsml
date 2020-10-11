@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <base href="/" target="_blank">
@@ -25,43 +24,9 @@
             margin: 0 auto;
             padding: 1em;
         }
-
-        .form {
-            width: 100%;
-            display: inline-flex;
-            place-items: flex-end;
-            margin-bottom: 12px;
-        }
-        .form > #field {
-            width: 100%;
-        }
-        .form > #submit {
-            width: 96px;
-            margin-left: 1em;
-        }
-
-        .itemname {
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
     </style>
 </head>
-
 <body>
-
-    <fast-design-system-provider use-defaults>
-        <div class="form">
-            <fast-text-field appearance="outline" placeholder="Search or put URL here..." autofocus id="field">Downhost
-            </fast-text-field>
-            <fast-button id="submit" hidden>Download</fast-button>
-        </div>
-        <div>
-            <fast-accordion id="list">
-            </fast-accordion>
-        </div>
-    </fast-design-system-provider>
+    
 </body>
-
 </html>
