@@ -6,7 +6,8 @@
     <base href="/" target="_blank">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" sizes="128x128" href="static/icon.png">
-    <script type="module" src="static/fast-components.min.js"></script>
+    <script type="module" src="https://unpkg.com/@microsoft/fast-components"></script>
+    <!-- <script type="module" src="static/fast-components.min.js"></script> -->
     <script src="static/index.js"></script>
     <title>{@title}</title>
     <style>
@@ -46,6 +47,20 @@
             white-space: nowrap;
             text-overflow: ellipsis;
         }
+
+        .content {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+        }
+        .content[hidden] {
+            display: none;
+        }
+
+        .desc {
+            margin: auto 0 auto 12px;
+            width: 100%;
+        }
     </style>
 </head>
 
@@ -62,6 +77,51 @@
             </fast-accordion>
         </div>
     </fast-design-system-provider>
+    <div id="placeholder" class="content" hidden>
+        <fast-skeleton shape="circle" style="
+            max-width:100px;
+            height:140px;
+            border-radius:4px;
+        "></fast-skeleton>
+        <div class="desc">
+            <fast-skeleton shape="rect" style="
+                width:249px;
+                height:10px;
+                border-radius:4px;
+            "></fast-skeleton>
+            <fast-skeleton shape="rect" style="
+                margin-top: 10px;
+                width:100px;
+                height:10px;
+                border-radius:4px;
+            "></fast-skeleton>
+            <fast-skeleton shape="rect" style="
+                margin-top: 10px;
+                width:60px;
+                height:10px;
+                border-radius:4px;
+            "></fast-skeleton>
+        </div>
+        <div class="nav">
+            <fast-skeleton shape="rect" style="
+                width:70px;
+                height:35px;
+                border-radius:4px;
+            "></fast-skeleton>
+            <fast-skeleton shape="rect" style="
+                margin-top: 10px;
+                width:70px;
+                height:35px;
+                border-radius:4px;
+            "></fast-skeleton>
+            <fast-skeleton shape="rect" style="
+                margin-top: 10px;
+                width:70px;
+                height:35px;
+                border-radius:4px;
+            "></fast-skeleton>
+        </div>
+    </div>
 </body>
 
 </html>

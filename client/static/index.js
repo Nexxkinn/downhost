@@ -5,6 +5,10 @@ async function init() {
     const submit = document.getElementById('submit');
     const field  = document.getElementById('field');
 
+    // This is a hotfix for shadow DOM bug occured in Warp JIT on firefox 83+
+    // Remove it if it was fixed in later builds.
+    field.shadowRoot.getElementById('control').value = "";
+
     submit.onclick = async (_) => {
         const url = field.value;
         if (!url) return;
@@ -79,7 +83,11 @@ function createItem({ id, name, percent = '', status = '' }) {
     const stat = `<div name="stat">${status}</div>`;
 
     item.name = id;
-    item.innerHTML = "".concat(head,perc,stat);
+    //item.innerHTML = "".concat(head,perc,stat);
+    // debug
+    item.expanded = true;
+    item.innerHTML = "".concat(head);
+    displaySkeleton(item);
     return item;
 }
 
@@ -92,4 +100,14 @@ function updateItem(element, { percent, status }) {
     [head, perc, stat] = [...element.children];
     perc.innerHTML = String(percent);
     stat.innerHTML = String(status);
+}
+
+/**
+ * 
+ * @param {HTMLElement} element 
+ */
+function displaySkeleton(element){
+    const placeholder = document.getElementById('placeholder').cloneNode(true);
+    placeholder.hidden = false;
+    element.appendChild(placeholder);
 }

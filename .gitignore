@@ -2,4 +2,5 @@
 token.json
 *.zip
 *.sqlite
+*.ps1
 library/

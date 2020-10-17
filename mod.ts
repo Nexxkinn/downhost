@@ -4,6 +4,7 @@ import { info } from './index.ts';
 import { log } from './lib/_mod.ts';
 
 const config = JSON.parse(await Deno.readTextFile('config.json'));
+
 console.log(
 `#=============================#
 #                             #
@@ -17,7 +18,8 @@ console.log(
 #           HHH HHH           #
 #             HHH             #
 #                             #
-#=============================#`)
+#===========DownHost==========#`)
+
 log(`Version : ${info.version}`)
 log('Downloading static files');
 log('Initialize database...');
