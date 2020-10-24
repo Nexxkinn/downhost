@@ -6,8 +6,8 @@
     <base href="/" target="_blank">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" sizes="128x128" href="static/icon.png">
-    <script type="module" src="https://unpkg.com/@microsoft/fast-components"></script>
-    <!-- <script type="module" src="static/fast-components.min.js"></script> -->
+    <!-- <script type="module" src="https://unpkg.com/@microsoft/fast-components"></script> -->
+    <script type="module" src="static/fast-components.min.js"></script>
     <script src="static/index.js"></script>
     <title>{@title}</title>
     <style>
@@ -26,6 +26,15 @@
             margin: 0 auto;
             padding: 1em;
         }
+        
+        .header {
+            display: inline-flex;
+            width: 100%;
+        }
+
+        .header > .nav {
+            margin: auto 0 auto auto;
+        }
 
         .form {
             width: 100%;
@@ -41,11 +50,13 @@
             margin-left: 1em;
         }
 
-        .itemname {
+        .title {
+            font-weight: bold;
             text-overflow: ellipsis;
             overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-box-orient: vertical; 
+            -webkit-line-clamp: 2;
         }
 
         .content {
@@ -67,17 +78,27 @@
 <body>
 
     <fast-design-system-provider use-defaults>
+        <div class="header">
+            <h1>DownHost</h1>
+            <div class="nav">
+                <fast-button id="settings"></fast-button>
+            </div>
+        </div>
         <div class="form">
-            <fast-text-field appearance="outline" placeholder="Search or put URL here..." autofocus id="field">Downhost
+            <fast-text-field appearance="outline" placeholder="Search or put gallery link here..." autofocus id="field">
             </fast-text-field>
             <fast-button id="submit" hidden>Download</fast-button>
         </div>
-        <div>
-            <fast-accordion id="list">
-            </fast-accordion>
+        <div id="list">
         </div>
+        <fast-dialog id="settings-dialog" modal hidden>
+            <div>
+                <h2>Dialog with text and a button.</h2>
+                <fast-button id="dialog-close">Close</fast-button>
+            </div>
+        </fast-dialog>
     </fast-design-system-provider>
-    <div id="placeholder" class="content" hidden>
+    <!-- <div id="placeholder" class="content" hidden>
         <fast-skeleton shape="circle" style="
             max-width:100px;
             height:140px;
@@ -85,7 +106,7 @@
         "></fast-skeleton>
         <div class="desc">
             <fast-skeleton shape="rect" style="
-                width:249px;
+                width:100px;
                 height:10px;
                 border-radius:4px;
             "></fast-skeleton>
@@ -121,7 +142,7 @@
                 border-radius:4px;
             "></fast-skeleton>
         </div>
-    </div>
+    </div> -->
 </body>
 
 </html>

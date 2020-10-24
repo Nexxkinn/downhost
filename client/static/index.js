@@ -2,12 +2,16 @@ window.onload = init;
 
 async function init() {
 
-    const submit = document.getElementById('submit');
-    const field  = document.getElementById('field');
+    const field    = document.getElementById('field');
+    const submit   = document.getElementById('submit');
+    const settings = document.getElementById('settings');
+    const dialog   = document.getElementById('settings-dialog');
 
     // This is a hotfix for shadow DOM bug occured in Warp JIT on firefox 83+
     // Remove it if it was fixed in later builds.
     field.shadowRoot.getElementById('control').value = "";
+
+    document.getElementById('dialog-close').onclick = () => dialog.hidden = true;
 
     submit.onclick = async (_) => {
         const url = field.value;
@@ -20,6 +24,10 @@ async function init() {
         const gql = await fetch_gql({ query, variables });
         field.value = "";
         console.log(gql);
+    }
+
+    settings.onclick = (_) => {
+        dialog.hidden = false;
     }
 
     field.valueChanged = (_) => {
@@ -75,19 +83,27 @@ async function sleep(ms) {
 }
 
 function createItem({ id, name, percent = '', status = '' }) {
-    const item = document.createElement('fast-accordion-item');
-    const head = `<span slot="heading" class="itemname">
-                    <div> ${name} </div>
-                    </span>`;
-    const perc = `<div name="prog">${percent}</div>`;
-    const stat = `<div name="stat">${status}</div>`;
+    const item = document.createElement('fast-card');
+
+    const thumb = document.createElement('fast-skeleton');
+          thumb.shape = "circle";
+          thumb.style = ` max-width:160px;  
+                          height:190px;
+                          border-radius:4px;`;
+
+    const content = document.createElement('div');
+          content.style = "padding: 0 10px 10px;";
+          content.innerHTML = `<div class="title">${name}</div>`
+          //<div name="stat">${status}</div>;
+          //<div name="prog">${percent}</div>
 
     item.name = id;
-    //item.innerHTML = "".concat(head,perc,stat);
+    item.append(thumb,content);
+    item.style = "width:150px;"
     // debug
-    item.expanded = true;
-    item.innerHTML = "".concat(head);
-    displaySkeleton(item);
+    //item.expanded = true;
+    //item.innerHTML = "".concat(head);
+    // displaySkeleton(item);
     return item;
 }
 
@@ -97,6 +113,7 @@ function createItem({ id, name, percent = '', status = '' }) {
  * @param {any} item 
  */
 function updateItem(element, { percent, status }) {
+    return;
     [head, perc, stat] = [...element.children];
     perc.innerHTML = String(percent);
     stat.innerHTML = String(status);

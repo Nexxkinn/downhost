@@ -23,43 +23,12 @@ console.log(
 log(`Version : ${info.version}`)
 log('Downloading static files');
 log('Initialize database...');
+const db = initDB();
+
+log('prepare initial directories');
 
 const router = new Router();
-const db = new DB('database.sqlite');
-db.query(`CREATE TABLE IF NOT EXISTS 
-    download (
-        __typename TEXT NOT NULL,
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        service TEXT NOT NULL,
-        uid TEXT NOT NULL,
-        filename TEXT,
-        url TEXT,
-        name TEXT,
-        status TEXT,
-        size INTERGER,
-        downloaded INTERGER,
-        UNIQUE (service, uid)
-        )`);
-db.query(`CREATE TABLE IF NOT EXISTS 
-    credential (
-        service TEXT NOT NULL,
-        user TEXT,
-        pass TEXT,
-        token TEXT
-        )`);
-db.query(`CREATE TABLE IF NOT EXISTS 
-    user (
-        user TEXT,
-        pass TEXT,
-        access TEXT
-        )`);
-db.query(`CREATE TABLE IF NOT EXISTS 
-    library (
-        path TEXT
-        )`);
 
-// dummy
-// db.query("INSERT INTO download(__typename,name,status) VALUES('Bulk','test','paused')")
 router
     .get('/',async (ctx) => {
         ctx.response.body = await index(ctx.request,db);
@@ -85,3 +54,39 @@ app.addEventListener("listen", (ctx) => {
 
 await app.listen( {hostname:config.hostname,port:config.port} )
 // start server
+
+function initDB() {
+    const db = new DB('database.sqlite');
+    db.query(`CREATE TABLE IF NOT EXISTS 
+        download (
+            __typename TEXT NOT NULL,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            service TEXT NOT NULL,
+            uid TEXT NOT NULL,
+            filename TEXT,
+            url TEXT,
+            name TEXT,
+            status TEXT,
+            size INTERGER,
+            downloaded INTERGER,
+            UNIQUE (service, uid)
+            )`);
+    db.query(`CREATE TABLE IF NOT EXISTS 
+        credential (
+            service TEXT NOT NULL,
+            user TEXT,
+            pass TEXT,
+            token TEXT
+            )`);
+    db.query(`CREATE TABLE IF NOT EXISTS 
+        user (
+            user TEXT,
+            pass TEXT,
+            access TEXT
+            )`);
+    db.query(`CREATE TABLE IF NOT EXISTS 
+        library (
+            path TEXT
+            )`);
+    return db;
+}
