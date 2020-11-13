@@ -1,5 +1,5 @@
 import { Application, Router, DB, contentType } from './deps.ts';
-import { index, graphql } from './api/_mod.ts';
+import { log, loadConfig, ensureDir } from './lib/_mod.ts';
 import { info } from './index.ts';
 import { log } from './lib/_mod.ts';
 
@@ -27,14 +27,18 @@ const db = initDB();
 
 log('prepare initial directories');
 
+log('Kicking up database...');
+const db = start_database();
 const router = new Router();
 
 router
     .get('/',async (ctx) => {
         ctx.response.body = await index(ctx.request,db);
     })
-    .post('/graphql',async (ctx) => {
-        ctx.response.body = await graphql(ctx.request,db);
+    .post('/api/:function',async (ctx) => {
+        const body = await ctx.request.body({ type: 'json' }).value;
+        const func = ctx.params.function;
+        ctx.response.body = await api({func,body},db);
     })
     .get('/static/:file', async (ctx) => {
         ctx.response.body = await Deno.readFile(`client/static/${ctx.params.file}`);
@@ -55,38 +59,24 @@ app.addEventListener("listen", (ctx) => {
 await app.listen( {hostname:config.hostname,port:config.port} )
 // start server
 
-function initDB() {
-    const db = new DB('database.sqlite');
+function start_database() {
+    const db = new DB('db.sqlite');
     db.query(`CREATE TABLE IF NOT EXISTS 
-        download (
-            __typename TEXT NOT NULL,
+        catalog (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            service TEXT NOT NULL,
-            uid TEXT NOT NULL,
+            hash TEXT NOT NULL UNIQUE,
+            thumb_hash TEXT,
             filename TEXT,
             url TEXT,
-            name TEXT,
-            status TEXT,
+            title TEXT,
+            status INTERGER
+            )`);
+    db.query(`CREATE TABLE IF NOT EXISTS 
+        download (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hash TEXT NOT NULL UNIQUE,
             size INTERGER,
-            downloaded INTERGER,
-            UNIQUE (service, uid)
-            )`);
-    db.query(`CREATE TABLE IF NOT EXISTS 
-        credential (
-            service TEXT NOT NULL,
-            user TEXT,
-            pass TEXT,
-            token TEXT
-            )`);
-    db.query(`CREATE TABLE IF NOT EXISTS 
-        user (
-            user TEXT,
-            pass TEXT,
-            access TEXT
-            )`);
-    db.query(`CREATE TABLE IF NOT EXISTS 
-        library (
-            path TEXT
+            size_down INTERGER
             )`);
     return db;
 }

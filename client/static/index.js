@@ -16,12 +16,8 @@ async function init() {
     submit.onclick = async (_) => {
         const url = field.value;
         if (!url) return;
-        const query = `mutation add($www:String) {
-            add(url:$www)
-        }
-        `
-        const variables = { www: url }
-        const gql = await fetch_gql({ query, variables });
+        const body = { url };
+        const gql = await req({ func:'add', body });
         field.value = "";
         console.log(gql);
     }
@@ -37,23 +33,20 @@ async function init() {
 }
 
 async function refreshList() {
-    const query = `query { getlist { ... { id name progress status } } }`
-    const res = await fetch_gql({ query });
-    const list = res.data.getlist;
-
-    updatelist(list);
+    const res = await req({ func:'downlist' });
+    updatelist(res);
     window.setTimeout(refreshList, 1000);
 }
 
-async function fetch_gql({ query, variables = {} }) {
-    const res = await fetch('graphql',
+async function req({ func, body = {} }) {
+    const res = await fetch(`/api/${func}`,
         {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ query, variables })
+            body: JSON.stringify(body)
         })
     return await res.json();
 }
@@ -62,18 +55,20 @@ function updatelist(list) {
     const table = document.getElementById('list');
 
     for (const item of list) {
-        const { id, name, progress, status } = item;
+        const { id, name, size,size_down, status } = item;
+
+        const percent = Number(size_down) != 0 ? size*100/size_down : '0';
 
         let isListed = false;
         for (const child of table.children) {
             if (child.name === id) {
-                updateItem(child, { percent:progress, status });
+                updateItem(child, { percent, status });
                 isListed = true;
                 break;
             }
         }
         if (!isListed) {
-            table.appendChild(createItem({ id, name, percent: progress, status }))
+            table.appendChild(createItem({ id, name, percent, status }))
         }
     }
 }

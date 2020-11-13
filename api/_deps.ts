@@ -1,5 +1,8 @@
 export { 
     DB, 
-    Bulk,Pages, Request, DownMode, 
-    parsegql, graphql, buildSchema 
+    Request, DownMode,
 } from '../deps.ts';
+
+export type {
+    Bulk,Pages, 
+} from "../deps.ts";
