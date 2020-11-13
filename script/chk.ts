@@ -1,4 +1,4 @@
-import {de, Download, Meta, DownType} from './_deps.ts';
+import {de, Download, DownMeta, DownType} from './_deps.ts';
 
 const token = de("klcjv4xqjv9a04xlk1aopsqxklf6ac3lh16601tz...");
 const srvc  = de("rlf641xlh1d6fnstkkfa43szby...");
@@ -7,7 +7,7 @@ export async function download({ meta }:Download) {
     return await fetch(meta.url);
 }
 
-export async function metadata(link:string):Promise<Meta> {
+export async function metadata(link:string):Promise<DownMeta> {
 
     const url = new URL(link);
     const path = url.pathname.match(/(?<=\/)\w+/g);
@@ -28,7 +28,6 @@ export async function metadata(link:string):Promise<Meta> {
         uid,
         title,
         type: DownType.BULK,
-        service: srvc,
         url,
     }
 }

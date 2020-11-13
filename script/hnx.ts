@@ -1,4 +1,4 @@
-import { de, grab, Meta, Download, DownType } from "./_deps.ts";
+import { de, grab, DownMeta, Download, DownType } from "./_deps.ts";
 
 const token = de("klcjv4xqjv9a0cxhk1copcsrbe4ju41rbk96csn...");
 const srvc  = de("kla642xlkh9ou0xerb9oo33k...");
@@ -6,7 +6,7 @@ const srvc  = de("kla642xlkh9ou0xerb9oo33k...");
 export async function download({meta}:Download):Promise<Response> {
 
     // debug
-    const {u,p} = JSON.parse(Deno.readTextFileSync("token.json"));
+    const {u,p} = JSON.parse(Deno.readTextFileSync("auth.json"))['hnx'];
     const cookie = await getToken(u,p);
     const { url } = meta;
     const res = await fetch(url, {
@@ -16,7 +16,7 @@ export async function download({meta}:Download):Promise<Response> {
     return res;
 }
 
-export async function metadata(link: string):Promise<Meta> {
+export async function metadata(link: string):Promise<DownMeta> {
 
     const url = new URL(link);
     const [_, uid] = url.pathname.startsWith('/view/') ? link.split('/view/') : link.split('/zip/');
@@ -30,7 +30,7 @@ export async function metadata(link: string):Promise<Meta> {
     
     url.pathname = `/zip/${uid}`;
 
-    return { type:DownType.BULK, title, url, uid, service:srvc };
+    return { type:DownType.BULK, title, url, uid };
 }
 
 async function getToken(u:string,p:string){

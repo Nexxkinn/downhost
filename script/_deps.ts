@@ -1,7 +1,7 @@
-import { DB } from "../deps.ts";
+// import { DB } from "../deps.ts";
 export { de } from '../lib/_mod.ts';
 
-export type Meta = {
+export type DownMeta = {
     /**
      * Download type:
      * 
@@ -10,10 +10,6 @@ export type Meta = {
      * __Pages__ : Sscrap images from the gallery page.
      */
     type:DownType,
-    /**
-     * service used.
-     */
-    service:string,
     /**
      * Gallery title.
      * Will also be used for filename
@@ -31,7 +27,7 @@ export type Meta = {
 
 export type Download = {
     path: string,
-    meta:Meta,
+    meta:DownMeta,
 }
 
 export enum DownType {

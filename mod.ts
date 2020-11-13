@@ -1,9 +1,11 @@
 import { Application, Router, DB, contentType } from './deps.ts';
 import { log, loadConfig, ensureDir } from './lib/_mod.ts';
+import { index } from './route/_mod.ts';
+import { api } from './api/_mod.ts';
 import { info } from './index.ts';
-import { log } from './lib/_mod.ts';
 
-const config = JSON.parse(await Deno.readTextFile('config.json'));
+log("load config file");
+const config = await loadConfig();
 
 console.log(
 `#=============================#
@@ -21,16 +23,14 @@ console.log(
 #===========DownHost==========#`)
 
 log(`Version : ${info.version}`)
-log('Downloading static files');
-log('Initialize database...');
-const db = initDB();
 
-log('prepare initial directories');
+log('prepare some directories');
+await ensureDir(config.catalog_dir);
+await ensureDir(config.temp_dir);
 
 log('Kicking up database...');
 const db = start_database();
 const router = new Router();
-
 router
     .get('/',async (ctx) => {
         ctx.response.body = await index(ctx.request,db);
@@ -71,12 +71,12 @@ function start_database() {
             title TEXT,
             status INTERGER
             )`);
-    db.query(`CREATE TABLE IF NOT EXISTS 
+    db.query(`CREATE TABLE IF NOT EXISTS
         download (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             hash TEXT NOT NULL UNIQUE,
             size INTERGER,
             size_down INTERGER
-            )`);
+        )`); 
     return db;
 }

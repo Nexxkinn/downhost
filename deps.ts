@@ -16,10 +16,10 @@ export enum DownMode {
 
 export type Bulk = Item & {
     size: number,
-    downloaded: number
+    size_down: number
 }
 
 export type Pages = Item & {
     pages: number,
-    downloadedPages:number
+    pages_down:number
 }

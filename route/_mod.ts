@@ -1,0 +1,1 @@
+export { default as index } from './index.tsx';

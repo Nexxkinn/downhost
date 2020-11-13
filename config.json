@@ -1,6 +1,9 @@
 {
     "hostname":"localhost",
     "port":8080,
-    "baseurl": "default",
-    "basedir":"default"
+    "base_url": "",
+    "base_dir":"",
+    "catalog_dir":"",
+    "temp_dir":"",
+    "pass":""
 }
