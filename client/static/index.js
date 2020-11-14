@@ -57,20 +57,20 @@ function updatelist(list) {
     const table = document.getElementById('list');
 
     for (const item of list) {
-        const { id, name, size,size_down, status } = item;
+        const { id, title, size,size_down, status } = item;
 
         const percent = Number(size_down) != 0 ? size*100/size_down : '0';
 
         let isListed = false;
         for (const child of table.children) {
-            if (child.name === id) {
+            if (child.index === id) {
                 updateItem(child, { percent, status });
                 isListed = true;
                 break;
             }
         }
         if (!isListed) {
-            table.appendChild(createItem({ id, name, percent, status }))
+            table.appendChild(createItem({ id, title, percent, status }))
         }
     }
 }
@@ -79,24 +79,22 @@ async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function createItem({ id, name, percent = '', status = '' }) {
+function createItem({ id, title, percent = '', status = '' }) {
     const item = document.createElement('fast-card');
 
     const thumb = document.createElement('fast-skeleton');
           thumb.shape = "circle";
-          thumb.style = ` max-width:160px;  
-                          height:190px;
+          thumb.style = ` height:190px;
                           border-radius:4px;`;
 
     const content = document.createElement('div');
           content.style = "padding: 0 10px 10px;";
-          content.innerHTML = `<div class="title">${name}</div>`
+          content.innerHTML = `<div class="title">${title}</div>`
           //<div name="stat">${status}</div>;
           //<div name="prog">${percent}</div>
 
-    item.name = id;
+    item.index = id;
     item.append(thumb,content);
-    item.style = "width:150px;"
     // debug
     //item.expanded = true;
     //item.innerHTML = "".concat(head);

@@ -1,10 +1,13 @@
-import {de, Download, DownMeta, DownType} from './_deps.ts';
+import {de, DownMeta, DownRequest, DownType} from './_deps.ts';
 
 const token = de("klcjv4xqjv9a04xlk1aopsqxklf6ac3lh16601tz...");
 const srvc  = de("rlf641xlh1d6fnstkkfa43szby...");
 
-export async function download({ meta }:Download) {
-    return await fetch(meta.url);
+export async function download(meta:DownMeta):Promise<DownRequest> {
+    return {
+        input: meta.url,
+        init: undefined
+    }
 }
 
 export async function metadata(link:string):Promise<DownMeta> {

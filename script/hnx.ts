@@ -1,18 +1,22 @@
-import { de, grab, DownMeta, Download, DownType } from "./_deps.ts";
+import { de, grab, DownMeta, DownRequest, DownType, DownPagesRequest } from "./_deps.ts";
 
 const token = de("klcjv4xqjv9a0cxhk1copcsrbe4ju41rbk96csn...");
 const srvc  = de("kla642xlkh9ou0xerb9oo33k...");
 
-export async function download({meta}:Download):Promise<Response> {
+export async function download(meta:DownMeta):Promise< DownRequest | DownPagesRequest> {
 
     // debug
     const {u,p} = JSON.parse(Deno.readTextFileSync("auth.json"))['hnx'];
     const cookie = await getToken(u,p);
     const { url } = meta;
-    const res = await fetch(url, {
-        method:"GET",
-        headers: { "cookie": cookie }
-    });
+
+    const res:DownRequest = {
+        input : url,
+        init : {
+            method: "GET",
+            headers: { "cookie": cookie }
+        }
+    }
     return res;
 }
 

@@ -25,10 +25,16 @@ export type DownMeta = {
     uid: string
 }
 
-export type Download = {
-    path: string,
-    meta:DownMeta,
+export type DownRequest = {
+    input: Request | URL | string,
+    init: RequestInit | undefined,
 }
+
+type PageRequest = DownRequest & {
+    filename: string
+}
+
+export type DownPagesRequest = Array<PageRequest>
 
 export enum DownType {
     BULK="Bulk",

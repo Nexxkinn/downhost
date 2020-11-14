@@ -26,6 +26,11 @@
             margin: 0 auto;
             padding: 1em;
         }
+
+        fast-card {
+            margin-right: 12px;
+            width: 140px;
+        }
         
         .header {
             display: inline-flex;
@@ -72,6 +77,11 @@
             margin: auto 0 auto 12px;
             width: 100%;
         }
+
+        .list {
+            display: flex;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 
@@ -89,7 +99,7 @@
             </fast-text-field>
             <fast-button id="submit" hidden>Download</fast-button>
         </div>
-        <div id="list">
+        <div id="list" class="list">
         </div>
         <fast-dialog id="settings-dialog" modal hidden>
             <div>
