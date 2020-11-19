@@ -27,6 +27,7 @@ log(`Version : ${info.version}`)
 log('prepare some directories');
 await ensureDir(config.catalog_dir);
 await ensureDir(config.temp_dir);
+await ensureDir(config.catalog_dir+'/thumb/')
 
 log('Kicking up database...');
 const db = start_database();
@@ -77,6 +78,14 @@ function start_database() {
             hash TEXT NOT NULL UNIQUE,
             size INTERGER,
             size_down INTERGER
-        )`); 
+        )`);
+    db.query(`CREATE TABLE IF NOT EXISTS
+        thumbnail (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hash TEXT UNIQUE,
+            path TEXT,
+            filename TEXT
+        )
+    `)
     return db;
 }

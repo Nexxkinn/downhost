@@ -7,6 +7,15 @@ async function init() {
     const settings = document.getElementById('settings');
     const dialog   = document.getElementById('settings-dialog');
 
+    const catalogTab = document.getElementById('catalogTab');
+    const libraryTab = document.getElementById('libraryTab');
+
+    const catalogPanel = document.getElementById('catalogPanel');
+    const libraryPanel = document.getElementById('libraryPanel');
+
+    catalogPanel.hidden = false;
+    libraryPanel.hidden = true;
+
     // This is a hotfix for shadow DOM bug occured in Warp JIT on firefox 83+
     // Remove it if it was fixed in later builds.
     // 11/11/2020 : https://github.com/microsoft/fast/pull/4087 fixes this issue.
@@ -22,6 +31,22 @@ async function init() {
         const gql = await req({ func:'add', body });
         field.value = "";
         console.log(gql);
+    }
+
+    catalogTab.onclick = (_) => {
+        catalogTab.appearance = "accent";
+        catalogPanel.hidden = false;
+
+        libraryTab.appearance = "stealth";
+        libraryPanel.hidden = true;
+    }
+
+    libraryTab.onclick = (_) => {
+        catalogTab.appearance = "stealth";
+        catalogPanel.hidden = true;
+
+        libraryTab.appearance = "accent";
+        libraryPanel.hidden = false;
     }
 
     settings.onclick = (_) => {

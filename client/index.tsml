@@ -29,7 +29,7 @@
 
         fast-card {
             margin-right: 12px;
-            width: 140px;
+            width: 150px;
         }
         
         .header {
@@ -82,6 +82,24 @@
             display: flex;
             flex-wrap: wrap;
         }
+
+        .nav {
+            display: flex;
+        }
+
+        .nav-button {
+            flex-grow: 1;
+        }
+
+        @media only screen and (min-width: 600px) {
+            .nav {
+                display: unset;
+            }
+            .nav-button {
+                flex-grow: unset;
+                width: 80px;
+            }
+        }
     </style>
 </head>
 
@@ -99,7 +117,19 @@
             </fast-text-field>
             <fast-button id="submit" hidden>Download</fast-button>
         </div>
-        <div id="list" class="list">
+        <div id="nav" class="nav">
+            <fast-button class="nav-button" id="catalogTab" appearance="accent" >Catalog</fast-button>
+            <fast-button class="nav-button" id="libraryTab" appearance="stealth">Library</fast-button>
+        </div>
+        <fast-divider></fast-divider>
+        <div id="panel">
+            <div id="catalogPanel" hidden>
+                
+            </div>
+            <div id="libraryPanel" hidden>
+                <div id="list" class="list"></div>
+            </div>
+        </div>
         </div>
         <fast-dialog id="settings-dialog" modal hidden>
             <div>
@@ -108,51 +138,6 @@
             </div>
         </fast-dialog>
     </fast-design-system-provider>
-    <!-- <div id="placeholder" class="content" hidden>
-        <fast-skeleton shape="circle" style="
-            max-width:100px;
-            height:140px;
-            border-radius:4px;
-        "></fast-skeleton>
-        <div class="desc">
-            <fast-skeleton shape="rect" style="
-                width:100px;
-                height:10px;
-                border-radius:4px;
-            "></fast-skeleton>
-            <fast-skeleton shape="rect" style="
-                margin-top: 10px;
-                width:100px;
-                height:10px;
-                border-radius:4px;
-            "></fast-skeleton>
-            <fast-skeleton shape="rect" style="
-                margin-top: 10px;
-                width:60px;
-                height:10px;
-                border-radius:4px;
-            "></fast-skeleton>
-        </div>
-        <div class="nav">
-            <fast-skeleton shape="rect" style="
-                width:70px;
-                height:35px;
-                border-radius:4px;
-            "></fast-skeleton>
-            <fast-skeleton shape="rect" style="
-                margin-top: 10px;
-                width:70px;
-                height:35px;
-                border-radius:4px;
-            "></fast-skeleton>
-            <fast-skeleton shape="rect" style="
-                margin-top: 10px;
-                width:70px;
-                height:35px;
-                border-radius:4px;
-            "></fast-skeleton>
-        </div>
-    </div> -->
 </body>
 
 </html>

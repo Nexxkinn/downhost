@@ -27,11 +27,11 @@ export function de(text: string) {
     return tde.decode(output);
 }
 
-export function en(text: string) {
+export function en(text: string,dot=true) {
     const array = new Uint8Array(ten.encode(text));
     const copy = new Uint8Array(array);
-    const len = array.byteLength
-    //const padding = true
+    const len = array.byteLength;
+    
     let bits = 0
     let value = 0
     let output = ''
@@ -50,7 +50,7 @@ export function en(text: string) {
         output += magic[(value << (5 - bits)) & 31]
     }
 
-    output += '...'
+    output += dot ? '...' : '';
 
     return output
 }

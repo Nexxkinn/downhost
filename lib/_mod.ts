@@ -4,4 +4,4 @@ export { en, de } from './detox.ts';
 export { Task, appendTask } from './task.ts';
 export { log } from './log.ts';
 export { loadConfig } from './config.ts';
-export { ensureDir } from './ensureDir.ts';
+export { ensureFile, ensureDir } from './ensureFileDir.ts';

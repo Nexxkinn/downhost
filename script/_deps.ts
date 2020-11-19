@@ -11,14 +11,22 @@ export type DownMeta = {
      */
     type:DownType,
     /**
+     * service name
+     */
+    srvc: string,
+    /**
      * Gallery title.
      * Will also be used for filename
      */
     title:string,
     /**
-     * Download link that will be used in `download()`
+     * Thumbnail request link
      */
-    url: URL,
+    thumbnail: DownRequest,
+    /**
+     * link to download the compressed file or image files
+     */
+    download: DownRequest | DownPagesRequest,
     /**
      * Unique identifier given by the service.
      */
@@ -30,11 +38,19 @@ export type DownRequest = {
     init: RequestInit | undefined,
 }
 
-type PageRequest = DownRequest & {
+export type PageRequest = DownRequest & {
     filename: string
 }
 
-export type DownPagesRequest = Array<PageRequest>
+export type DownPagesRequest = {
+    gallery_size:number;
+    [Symbol.asyncIterator](): {
+        next(): Promise<{
+            value: PageRequest;
+            done: boolean;
+        }>;
+    };
+}
 
 export enum DownType {
     BULK="Bulk",

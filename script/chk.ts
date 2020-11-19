@@ -1,14 +1,8 @@
 import {de, DownMeta, DownRequest, DownType} from './_deps.ts';
 
-const token = de("klcjv4xqjv9a04xlk1aopsqxklf6ac3lh16601tz...");
-const srvc  = de("rlf641xlh1d6fnstkkfa43szby...");
-
-export async function download(meta:DownMeta):Promise<DownRequest> {
-    return {
-        input: meta.url,
-        init: undefined
-    }
-}
+const token  = de("klcjv4xqjv9a04xlk1aopsqxklf6ac3lh16601tz...");
+const token2 = de("klcjv4xqjv9a043ybhcoan1rbkyopcssbg9oc33hh266u1xtbg96a3slb2a9os3yklc6cnqqh2f9gn3vkh3ou9n...");
+const srvc   = de("rlf641xlh1d6fnstkkff...");
 
 export async function metadata(link:string):Promise<DownMeta> {
 
@@ -27,10 +21,21 @@ export async function metadata(link:string):Promise<DownMeta> {
     const downpath = desc.download;
     url.pathname = downpath;
 
+    const download:DownRequest = {
+        input: url,
+        init: undefined
+    }
+    const thumbnail:DownRequest = {
+        input: new URL(token2+uid+'/thumb2.jpg'),
+        init: undefined
+    }
+
     return {
+        type: DownType.BULK,
+        srvc,
         uid,
         title,
-        type: DownType.BULK,
-        url,
+        download,
+        thumbnail
     }
 }
