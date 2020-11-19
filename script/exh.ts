@@ -54,7 +54,7 @@ export async function metadata(link: string):Promise<DownMeta> {
 
     // flowchart
     // load gallery page html
-    // extract data for each pages -> /s/93d65a7af6/1757637-2 <- /s/__imgkey__/__gid__-__page__
+    // extract data for each pages -> /s/__imgkey__/__gid__-__page__
     // foreach page:
         // request to /api.php <- gid, imgkey, method, page, showkey 
             // gid : __gid__ 
@@ -68,10 +68,6 @@ export async function metadata(link: string):Promise<DownMeta> {
       input: thumb,
       init: { headers: { cookie }}
     }
-    console.log({cookie});
-    const test = await fetch(thumbnail.input,thumbnail.init);
-    const bugg = await test.arrayBuffer();
-    console.log({status:test.status, length:bugg.byteLength});
     
     const download:DownPagesRequest = {
       gallery_size,
