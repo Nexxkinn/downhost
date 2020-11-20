@@ -5,3 +5,4 @@ export { Task, appendTask } from './task.ts';
 export { log } from './log.ts';
 export { loadConfig } from './config.ts';
 export { ensureFile, ensureDir } from './ensureFileDir.ts';
+export { zipDir, readZip  } from './JSZip/mod.ts';

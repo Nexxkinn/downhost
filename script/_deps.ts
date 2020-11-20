@@ -1,5 +1,6 @@
 // import { DB } from "../deps.ts";
 export { de } from '../lib/_mod.ts';
+export { log } from '../lib/_mod.ts';
 
 export type DownMeta = {
     /**
@@ -36,6 +37,11 @@ export type DownMeta = {
 export type DownRequest = {
     input: Request | URL | string,
     init: RequestInit | undefined,
+    /**
+     * Handle failed download and give an alternative one.
+     * Fired when fetch() failed or too long to download.
+     */
+    alt?(download: DownRequest | PageRequest) : Promise<DownRequest | PageRequest>,
 }
 
 export type PageRequest = DownRequest & {
@@ -51,6 +57,7 @@ export type DownPagesRequest = {
         }>;
     };
 }
+
 
 export enum DownType {
     BULK="Bulk",

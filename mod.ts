@@ -27,7 +27,7 @@ log(`Version : ${info.version}`)
 log('prepare some directories');
 await ensureDir(config.catalog_dir);
 await ensureDir(config.temp_dir);
-await ensureDir(config.catalog_dir+'/thumb/')
+await ensureDir(config.temp_dir+'/thumb/')
 
 log('Kicking up database...');
 const db = start_database();
