@@ -37,19 +37,17 @@ function run(task: Task) {
                 const hash = srvc + uid;
 
                 // download thumbnail
-                const thumb_path = `${config.temp_dir}/thumb/${hash}`;
+                const thumb_path = join(config.temp_dir,'thumb',hash);
                 if (!await ensureFile(thumb_path)) {
                     const thumb_file = await Deno.create(thumb_path);
                     const { body } = await fetch(thumbnail.input, thumbnail.init);
-
                     if (body) { for await (const chunk of body) { thumb_file.writeSync(chunk) } }
-
                     thumb_file.close();
                 }
 
                 db.query("INSERT INTO catalog(hash,url,title,status) VALUES(?,?,?,?)", [hash, url, title, 0])
 
-                const file_name = `[${srvc}][${uid}] ${title.replace(/[/\\?%*:|"<>]/g,'_')}.zip`;
+                const file_name = `[${srvc}][${uid}] ${title.replace(/[/\\?%*:|"<>]/g,'-')}.zip`;
 
                 switch (type) {
                     case DownType.BULK: {
@@ -102,17 +100,27 @@ function run(task: Task) {
                         const fetch_file = async (page: PageRequest, retry = 3, is_alt=false) => {
                             const { input, init, filename, alt } = page;
                             let isTimeOut=false;
-                            let id = 0;
                             try {
-                                const file = await Deno.create(`${config.temp_dir}/${hash}/${filename}`);
-                                id = setTimeout(() => { isTimeOut=true; console.error(new Error('Timed out')) }, 30000);
-                                const { body, status } = await fetch(input, {...init});
-                                clearTimeout(id);
-                                if (!body || status !== 200) throw new Error('unable to download file');
-                                for await (const chunk of body) { file.writeSync(chunk); }
+                                // this is our current implementation to make a timeout abort fetch
+                                // because Deno has yet to implement AbortController feature on fetch.
+                                // TODO    : Refactor this code to use AbortController() once available.
+                                // Tracker : https://github.com/denoland/deno/pull/6093
+                                await new Promise( async (resolve:any,reject:any) => {
+                                    const id = setTimeout(() => { isTimeOut=true; reject('Timed out'); }, 30000);
+                                    try {
+                                        const res = await fetch(input, init);
+                                        await save_file(res,filename);
+                                        resolve();
+                                    }
+                                    catch (e){
+                                        reject(e.message);
+                                    }
+                                    finally {
+                                        clearTimeout(id);
+                                    }
+                                })
                             }
                             catch (e) {
-                                clearTimeout(id);
                                 if(retry <= 0 || isTimeOut ) {
                                     if(alt && !is_alt) {
                                         log(`Stop downloading ${filename}, requesting alternate download...`);
@@ -129,6 +137,11 @@ function run(task: Task) {
                                 }
                             }
                         }
+                        const save_file  = async ({ body, status }:Response, filename:string) => {
+                            if (!body || status !== 200) throw new Error('unable to download file');
+                            const { writeSync } = await Deno.create(`${config.temp_dir}/${hash}/${filename}`);
+                            for await (const chunk of body) { writeSync(chunk) };
+                        }
                         for await (const page of fetch_args) {
                             log(`Downloading ${page.filename}`);
                             await fetch_file(page);
@@ -141,7 +154,7 @@ function run(task: Task) {
                         await zip.writeZip(join(config.catalog_dir,file_name));
                         await Deno.remove(join(config.temp_dir,hash),{recursive:true});
 
-                        log(`done: ${join(config.catalog_dir,hash)}.zip`);
+                        log(`done: ${join(config.catalog_dir,file_name)}`);
 
                         break;
                         // TODO: get restriction e.g. delay between downloads
@@ -155,6 +168,7 @@ function run(task: Task) {
             }
             case ActionMode.RESUME: {
                 // grab meta from database
+                // not yet implemented
             }
         }
 

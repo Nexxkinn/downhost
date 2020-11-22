@@ -1,3 +1,4 @@
+export { join } from "../deps.ts";
 export { 
     DB, 
     Request, DownMode,

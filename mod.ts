@@ -1,4 +1,4 @@
-import { Application, Router, DB, contentType } from './deps.ts';
+import { Application, Router, DB, contentType, join } from './deps.ts';
 import { log, loadConfig, ensureDir } from './lib/_mod.ts';
 import { index } from './route/_mod.ts';
 import { api } from './api/_mod.ts';
@@ -48,6 +48,12 @@ router
     .get('/reader/:id', async (ctx) => {
         //ctx.response.body = await 
     })
+    .get('/thumb/:id', async (ctx) => {
+        const query = db.query('SELECT hash FROM catalog WHERE id = ? LIMIT 1',[ctx.params.id]);
+        const [[hash]] = Array.from(query);
+        ctx.response.body =  await Deno.readFile(join(config.temp_dir,'thumb',hash));
+        ctx.response.type = 'image/jpeg';
+    })
 
 const app = new Application();
 app.use(router.routes());
@@ -66,7 +72,6 @@ function start_database() {
         catalog (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             hash TEXT NOT NULL UNIQUE,
-            thumb_hash TEXT,
             filename TEXT,
             url TEXT,
             title TEXT,
@@ -79,13 +84,5 @@ function start_database() {
             size INTERGER,
             size_down INTERGER
         )`);
-    db.query(`CREATE TABLE IF NOT EXISTS
-        thumbnail (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            hash TEXT UNIQUE,
-            path TEXT,
-            filename TEXT
-        )
-    `)
     return db;
 }

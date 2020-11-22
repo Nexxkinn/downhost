@@ -107,19 +107,22 @@ async function sleep(ms) {
 function createItem({ id, title, percent = '', status = '' }) {
     const item = document.createElement('fast-card');
 
-    const thumb = document.createElement('fast-skeleton');
-          thumb.shape = "circle";
-          thumb.style = ` height:190px;
+    const thumb = document.createElement('img');
+          thumb.src = "/thumb/"+id;
+          thumb.style = ` width:100%;
                           border-radius:4px;`;
 
+    const div = document.createElement('div');
+          div.append(thumb);
+
     const content = document.createElement('div');
-          content.style = "padding: 0 10px 10px;";
-          content.innerHTML = `<div class="title">${title}</div>`
+          content.style = "width:100%;";
+          content.innerHTML = `<div title="${title}" class="title" id="item-title">${title}</div>`
           //<div name="stat">${status}</div>;
           //<div name="prog">${percent}</div>
 
     item.index = id;
-    item.append(thumb,content);
+    item.append(div,content);
     // debug
     //item.expanded = true;
     //item.innerHTML = "".concat(head);

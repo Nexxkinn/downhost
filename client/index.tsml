@@ -22,13 +22,14 @@
         body {
             background-color: var(--background-color);
             font-family: SegoeUIVF, Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif;
-            max-width: 800px;
+            max-width: 842px;
             margin: 0 auto;
             padding: 1em;
         }
 
         fast-card {
-            margin-right: 12px;
+            display: grid;
+            grid-auto-rows: 190px 60px;
             width: 150px;
         }
         
@@ -56,9 +57,12 @@
         }
 
         .title {
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 14px;
             text-overflow: ellipsis;
             overflow: hidden;
+            padding: 10px 10px 0 10px;
+            background: var(--neutral-fill-card-rest);
             display: -webkit-box;
             -webkit-box-orient: vertical; 
             -webkit-line-clamp: 2;
@@ -81,6 +85,7 @@
         .list {
             display: flex;
             flex-wrap: wrap;
+            gap: 15px;
         }
 
         .nav {
