@@ -33,7 +33,7 @@ export async function metadata(link: string): Promise<DownMeta> {
   const s_regex = new RegExp(`<div class="gdtl" style="height:[0-9]+px"><a href="${regex_token}(\\/s\\/([a-fA-F0-9]+)\\/[0-9]+\\-([0-9]+))`,'g');
   let s_pages = new Array();
   if (!contain_pages) {
-    s_pages = Array.from(html.matchAll(s_regex)) || [];
+    s_pages = Array.from(html.matchAll(s_regex)).map(x => { x.shift(); return x; });
   }
   else {
     const g_pages = getGalleryPages(html);

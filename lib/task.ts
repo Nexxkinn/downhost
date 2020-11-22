@@ -3,7 +3,6 @@ import { service } from '../script/_mod.ts';
 import { join } from './_deps.ts';
 import { DownMeta, DownType, PageRequest } from "../script/_deps.ts";
 import { DB } from "../api/_deps.ts";
-
 const TaskList: Promise<any>[] = new Array();
 const config = await loadConfig();
 
@@ -139,8 +138,8 @@ function run(task: Task) {
                         }
                         const save_file  = async ({ body, status }:Response, filename:string) => {
                             if (!body || status !== 200) throw new Error('unable to download file');
-                            const { writeSync } = await Deno.create(`${config.temp_dir}/${hash}/${filename}`);
-                            for await (const chunk of body) { writeSync(chunk) };
+                            const file = await Deno.create(`${config.temp_dir}/${hash}/${filename}`);
+                            for await (const chunk of body) { file.writeSync(chunk) };
                         }
                         for await (const page of fetch_args) {
                             log(`Downloading ${page.filename}`);
