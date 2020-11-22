@@ -52,7 +52,7 @@ router
         const query = db.query('SELECT hash FROM catalog WHERE id = ? LIMIT 1',[ctx.params.id]);
         const [[hash]] = Array.from(query);
         ctx.response.body =  await Deno.readFile(join(config.temp_dir,'thumb',hash));
-        ctx.response.type = 'image/jpeg';
+        ctx.response.type = 'image/image';
     })
 
 const app = new Application();

@@ -6,7 +6,7 @@ const regex_token = de('klcjv4xqjtrp09lzbe4of1srrdf6asqzrtqf...');
 const srvc = de('rkf6v4xlk1aop...');
 
 export async function metadata(link: string): Promise<DownMeta> {
-  // check hostname
+  // TODO: check hostname
   const url = new URL(link);
 
   // parse url pathname
