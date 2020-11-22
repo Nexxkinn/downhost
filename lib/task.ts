@@ -43,7 +43,7 @@ function run(task: Task) {
                     if (body) { for await (const chunk of body) { thumb_file.writeSync(chunk) } }
                     thumb_file.close();
                 }
-
+                
                 db.query("INSERT INTO catalog(hash,url,title,status) VALUES(?,?,?,?)", [hash, url, title, 0])
 
                 const file_name = `[${srvc}][${uid}] ${title.replace(/[/\\?%*:|"<>]/g,'-')}.zip`;
@@ -105,7 +105,7 @@ function run(task: Task) {
                                 // TODO    : Refactor this code to use AbortController() once available.
                                 // Tracker : https://github.com/denoland/deno/pull/6093
                                 await new Promise( async (resolve:any,reject:any) => {
-                                    const id = setTimeout(() => { isTimeOut=true; reject('Timed out'); }, 30000);
+                                    const id = setTimeout(() => { isTimeOut=true; return reject('Timed out'); }, 30000);
                                     try {
                                         const res = await fetch(input, init);
                                         await save_file(res,filename);

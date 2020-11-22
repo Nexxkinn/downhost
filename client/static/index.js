@@ -19,8 +19,8 @@ async function init() {
     // This is a hotfix for shadow DOM bug occured in Warp JIT on firefox 83+
     // Remove it if it was fixed in later builds.
     // 11/11/2020 : https://github.com/microsoft/fast/pull/4087 fixes this issue.
-    //
-    // field.shadowRoot.getElementById('control').value = "";
+    // 22/11/2020 : Nah, It's still broken in version 85.
+    field.shadowRoot.getElementById('control').value = "";
 
     document.getElementById('dialog-close').onclick = () => dialog.hidden = true;
 
