@@ -2,25 +2,25 @@ import { DownMode, DB } from './_deps.ts';
 import { default as downlist } from './downlist.ts';
 import { default as add } from "./add.ts";
 
-export async function api({func,body}:any, db: DB):Promise<string | undefined> {
+export async function api({ func, body }: any, db: DB): Promise<string | undefined> {
     try {
-        switch(func){
+        switch (func) {
             case "downlist": {
                 const page = body.page;
-                return await downlist(page,db);
+                return await downlist(page, db);
             }
-            case "add":{
+            case "add": {
                 const url = new URL(body.url);
-                return await add({url,db});
+                return await add({ url, db });
             }
-            case "remove":{
+            case "remove": {
                 const id = body.id;
 
             }
-            case "stop":{
+            case "stop": {
                 const id = body.id;
             }
-            case "catalog":{
+            case "catalog": {
                 const path = body.path;
             }
             default: return undefined;

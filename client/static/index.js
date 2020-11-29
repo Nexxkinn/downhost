@@ -104,7 +104,7 @@ async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function createItem({ id, title, percent = '', status = '' }) {
+function createItem({ id, title, percent = '', status = 0 }) {
     const item = document.createElement('fast-card');
 
     const thumb = document.createElement('img');
@@ -113,7 +113,16 @@ function createItem({ id, title, percent = '', status = '' }) {
                           border-radius:4px;`;
 
     const div = document.createElement('div');
-          div.append(thumb);
+
+    if (status === 3) {
+        const link = document.createElement('a');
+              link.href = '/reader/'+id;
+              link.append(thumb);
+        div.append(link);
+    }
+    else {
+        div.append(thumb);
+    }
 
     const content = document.createElement('div');
           content.style = "width:100%;";

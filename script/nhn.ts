@@ -12,7 +12,7 @@ export async function metadata(link: string): Promise<DownMeta> {
     const g_data = JSON.parse(grab('JSON.parse(', ');', g_html)); // Not yet parsed, actually. It's only parsed unicode characters.
     const g_json = JSON.parse(g_data);
 
-    const { title, id:uid, media_id, images, num_pages: gallery_size } = g_json;
+    const { title, id:uid, media_id, images, num_pages: length } = g_json;
     const {pages, cover} = images;
     const thumbnail:DownRequest = {
         input: `${t_token}/${media_id}/thumb.${cover.t === 'j' ? 'jpg' : 'png'}`,
@@ -20,8 +20,12 @@ export async function metadata(link: string): Promise<DownMeta> {
     }
 
     let page_index = 0;
+    const padding = (''+length).length;
+    const lpad = (value:number) => {
+        var zeroes = new Array(padding+1).join("0");
+        return (zeroes + value).slice(-padding);
+    }
     const download: DownPagesRequest = {
-        gallery_size,
         [Symbol.asyncIterator]() {
             return {
                 async next() {
@@ -30,8 +34,9 @@ export async function metadata(link: string): Promise<DownMeta> {
                     const { t } = pages.shift();
                     //if (t !== 'j') log(`OwO there's a file other than jpg !: ` + JSON.stringify({ page }));
 
-                    const filename = `${page_index}.${t === 'j' ? 'jpg' : 'png'}`;
-                    const input = `${token}/${media_id}/${filename}`;
+                    const filename   = `${lpad(page_index)}.${t === 'j' ? 'jpg' : 'png'}`;
+                    const input_name = `${page_index}.${t === 'j' ? 'jpg' : 'png'}`;
+                    const input      = `${token}/${media_id}/${input_name}`;
 
                     const request:PageRequest = {
                         input,
@@ -44,7 +49,7 @@ export async function metadata(link: string): Promise<DownMeta> {
             }
         }
     }
-    return { type:DownType.PAGES, uid, srvc, title:title.english, thumbnail, download}
+    return { type:DownType.PAGES, uid, srvc, title:title.english, thumbnail, length, download}
 }
 
 

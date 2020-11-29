@@ -12,8 +12,9 @@ export async function metadata(link: string):Promise<DownMeta> {
 
     const res = await fetch(url);
     const html = await res.text();
-    const title = grab('<h1 class="title">', '</h1>', html);
-    const thumb = grab('"og:image" content="', '"', html);
+    const title  = grab('<h1 class="title">', '</h1>', html);
+    const length = Number(grab('<td class="viewcolumn">Pages</td><td>','</td>',html));
+    const thumb  = grab('"og:image" content="', '"', html);
 
     
     url.pathname = `/zip/${uid}`;
@@ -21,7 +22,7 @@ export async function metadata(link: string):Promise<DownMeta> {
     const thumbnail:DownRequest = { input:new URL(thumb), init:undefined }
     const download:DownRequest = await fetch_link(url); 
 
-    return { type:DownType.BULK, srvc, title, uid, thumbnail, download };
+    return { type:DownType.BULK, srvc, title, uid, length, thumbnail, download };
 }
 
 async function fetch_link(url:URL): Promise<DownRequest>{

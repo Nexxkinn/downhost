@@ -29,6 +29,10 @@ export type DownMeta = {
      */
     download: DownRequest | DownPagesRequest,
     /**
+     * total pages in the gallery
+     */
+    length: number,
+    /**
      * Unique identifier given by the service.
      */
     uid: string
@@ -49,7 +53,6 @@ export type PageRequest = DownRequest & {
 }
 
 export type DownPagesRequest = {
-    gallery_size:number;
     [Symbol.asyncIterator](): {
         next(): Promise<{
             value: PageRequest;

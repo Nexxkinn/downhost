@@ -1,4 +1,5 @@
-export { join } from "../deps.ts";
+export { join, compress } from "../deps.ts";
+
 export type DownConfig = {
     hostname:string,
     port:number,

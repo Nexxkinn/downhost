@@ -1,3 +1,5 @@
+export { join, getEntries } from '../deps.ts';
+
 export { 
     DB, 
     Request, DownMode

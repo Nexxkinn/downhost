@@ -24,7 +24,7 @@ export async function metadata(link: string): Promise<DownMeta> {
   // TODO : check if gallery is accessible.
 
   const title = grab('<div id="gd2"><h1 id="gn">', '</h1>', html);
-  const gallery_size = Number(grab('Length:</td><td class="gdt2">', ' pages', html));
+  const length = Number(grab('Length:</td><td class="gdt2">', ' pages', html));
   const thumb = token + '/t/' + grab('background:transparent url(' + token + '/t/', ') 0 0 no-repeat">', html);
 
   // console.log({title, gallery_size, thumb})
@@ -72,7 +72,6 @@ export async function metadata(link: string): Promise<DownMeta> {
   }
 
   const download: DownPagesRequest = {
-    gallery_size,
     [Symbol.asyncIterator]() {
       return {
         async next() {
@@ -128,7 +127,7 @@ export async function metadata(link: string): Promise<DownMeta> {
     }
   };
 
-  return { type: DownType.PAGES, download, title, thumbnail, srvc, uid: gid }
+  return { type: DownType.PAGES, download, title, length, thumbnail, srvc, uid: gid }
 }
 
 async function getCookie() {

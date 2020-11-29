@@ -1,6 +1,6 @@
-import { en, de, loadConfig, ensureFile, log, zipDir } from './_mod.ts';
+import { en, de, loadConfig, ensureFile, log } from './_mod.ts';
 import { service } from '../script/_mod.ts';
-import { join } from './_deps.ts';
+import { join, compress } from './_deps.ts';
 import { DownMeta, DownType, PageRequest } from "../script/_deps.ts";
 import { DB } from "../api/_deps.ts";
 const TaskList: Promise<any>[] = new Array();
@@ -32,7 +32,7 @@ function run(task: Task) {
         const { url, db, action } = task
         switch (action) {
             case ActionMode.START: {
-                const { download: fetch_args, thumbnail, srvc, type, title, uid } = await resolve(url);
+                const { download: fetch_args, thumbnail, srvc, type, title, length, uid } = await resolve(url);
                 const hash = srvc + uid;
 
                 // download thumbnail
@@ -44,10 +44,10 @@ function run(task: Task) {
                     thumb_file.close();
                 }
                 
-                db.query("INSERT INTO catalog(hash,url,title,status) VALUES(?,?,?,?)", [hash, url, title, 0])
+                db.query("INSERT INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, url, title,length, 0])
 
                 const file_name = `[${srvc}][${uid}] ${title.replace(/[/\\?%*:|"<>]/g,'-')}.zip`;
-
+                
                 switch (type) {
                     case DownType.BULK: {
                         if (!('input' in fetch_args)) throw new Error("wrong DownType.");
@@ -73,11 +73,9 @@ function run(task: Task) {
 
                         if ('input' in fetch_args) throw new Error("wrong DownType.");
 
-                        const { gallery_size } = fetch_args;
-
                         await Deno.mkdir(`${config.temp_dir}/${hash}`);
 
-                        db.query("INSERT INTO download(hash,size) VALUES(?,?)", [hash, gallery_size])
+                        db.query("INSERT INTO download(hash,size) VALUES(?,?)", [hash, length])
                         db.query("UPDATE catalog SET status=? WHERE hash=? ", [1, hash]);
 
                         let page_downloaded = 0;
@@ -146,11 +144,10 @@ function run(task: Task) {
                             await fetch_file(page);
                             db.query("UPDATE download SET size_down=? WHERE hash=? ", [page_downloaded += 1, hash]);
                         }
-                        log(JSON.stringify({ page_downloaded, gallery_size }))
+                        log(JSON.stringify({ page_downloaded, length }))
 
                         log('compile gallery into compressed zip...')
-                        const zip = await zipDir(join(config.temp_dir,hash));
-                        await zip.writeZip(join(config.catalog_dir,file_name));
+                        await compress(join(config.temp_dir,hash),join(config.catalog_dir,file_name));
                         await Deno.remove(join(config.temp_dir,hash),{recursive:true});
 
                         log(`done: ${join(config.catalog_dir,file_name)}`);
@@ -160,7 +157,7 @@ function run(task: Task) {
                     }
                 }
 
-                db.query("UPDATE catalog SET status=? WHERE hash=? ", [3, hash]);
+                db.query("UPDATE catalog SET status=?,filename=? WHERE hash=? ", [3,file_name, hash]);
 
                 TaskList.splice(TaskList.indexOf(pto), 1);
                 break;

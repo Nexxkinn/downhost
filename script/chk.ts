@@ -18,6 +18,7 @@ export async function metadata(link:string):Promise<DownMeta> {
     const desc = await res.json();
 
     const title = desc.title;
+    const length = Number(desc.filecount);
     const downpath = desc.download;
     url.pathname = downpath;
 
@@ -35,6 +36,7 @@ export async function metadata(link:string):Promise<DownMeta> {
         srvc,
         uid,
         title,
+        length,
         download,
         thumbnail
     }
