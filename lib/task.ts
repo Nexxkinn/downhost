@@ -1,8 +1,9 @@
 import { en, de, loadConfig, ensureFile, log } from './_mod.ts';
 import { service } from '../script/_mod.ts';
-import { join, compress } from './_deps.ts';
+import { join, create_zip } from './_deps.ts';
 import { DownMeta, DownType, PageRequest } from "../script/_deps.ts";
 import { DB } from "../api/_deps.ts";
+
 const TaskList: Promise<any>[] = new Array();
 const config = await loadConfig();
 
@@ -74,6 +75,7 @@ function run(task: Task) {
                         if ('input' in fetch_args) throw new Error("wrong DownType.");
 
                         await Deno.mkdir(`${config.temp_dir}/${hash}`);
+                        const zip = await create_zip(join(config.temp_dir,hash,file_name));
 
                         db.query("INSERT INTO download(hash,size) VALUES(?,?)", [hash, length])
                         db.query("UPDATE catalog SET status=? WHERE hash=? ", [1, hash]);
@@ -136,8 +138,17 @@ function run(task: Task) {
                         }
                         const save_file  = async ({ body, status }:Response, filename:string) => {
                             if (!body || status !== 200) throw new Error('unable to download file');
-                            const file = await Deno.create(`${config.temp_dir}/${hash}/${filename}`);
-                            for await (const chunk of body) { file.writeSync(chunk) };
+
+                            let buffer = new Uint8Array(0);
+                            const _append = (a: Uint8Array, b: Uint8Array) => {
+                                const c = new Uint8Array(a.length + b.length);
+                                c.set(a, 0);
+                                c.set(b, a.length);
+                                return c;
+                            }
+                            for await (const chunk of body) {  buffer = _append(buffer,chunk) };
+
+                            await zip.push(buffer,filename);
                         }
                         for await (const page of fetch_args) {
                             log(`Downloading ${page.filename}`);
@@ -146,8 +157,9 @@ function run(task: Task) {
                         }
                         log(JSON.stringify({ page_downloaded, length }))
 
-                        log('compile gallery into compressed zip...')
-                        await compress(join(config.temp_dir,hash),join(config.catalog_dir,file_name));
+                        log('compile gallery into compressed zip...');
+                        await zip.end();
+                        await Deno.copyFile(join(config.temp_dir,hash,file_name),join(config.catalog_dir,file_name))
                         await Deno.remove(join(config.temp_dir,hash),{recursive:true});
 
                         log(`done: ${join(config.catalog_dir,file_name)}`);
