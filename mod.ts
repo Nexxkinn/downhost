@@ -84,7 +84,7 @@ function start_database() {
                catalog (
                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                    hash TEXT NOT NULL UNIQUE,
-                   length INTERNET,
+                   length INTERGER,
                    filename TEXT,
                    url TEXT,
                    title TEXT,
