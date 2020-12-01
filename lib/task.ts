@@ -47,7 +47,9 @@ function run(task: Task) {
                 
                 db.query("INSERT INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, url, title,length, 0])
 
-                const file_name = `[${srvc}][${uid}] ${title.replace(/[/\\?%*:|"<>]/g,'-')}.zip`;
+                let name = title.replace(/&(?:\#(?:(?<dec>[0-9]+)|[Xx](?<hex>[0-9A-Fa-f]+))|(?<named>[A-Za-z0-9]+));/g,'');
+                    name = name.replace(/[/\\?%*:|"<>]/g,'-');
+                const file_name = `[${srvc}][${uid}] ${name}.zip`;
                 
                 switch (type) {
                     case DownType.BULK: {

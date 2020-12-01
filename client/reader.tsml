@@ -29,6 +29,7 @@
 <body>
     <script>
         var len = {@length};
+        var list = {@list};
         var g = {@id};
     </script>
 </body>

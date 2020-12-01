@@ -43,8 +43,8 @@ router
     })
     .get('/image/:id/:page',async (ctx) => {
         const id   = Number(ctx.params.id);
-        const page = Number(ctx.params.page);
-        if( id > 0 && page > 0 ) {
+        const page = ctx.params.page;
+        if( id > 0 && page ) {
             const res  = await image(id,page,config.catalog_dir,db);
             ctx.response.body = res?.buff;
             ctx.response.type = res?.type;
