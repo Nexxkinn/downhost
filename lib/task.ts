@@ -107,10 +107,11 @@ function run(task: Task) {
                                 // TODO    : Refactor this code to use AbortController() once available.
                                 // Tracker : https://github.com/denoland/deno/pull/6093
                                 await new Promise( async (resolve:any,reject:any) => {
-                                    const id = setTimeout(() => { isTimeOut=true; return reject('Timed out'); }, 30000);
+                                    const abc = new AbortController();
+                                    const id = setTimeout(() => { isTimeOut=true; abc.abort(); return reject('Timed out'); }, 30000);
                                     try {
                                         const res = await fetch(input, init);
-                                        await save_file(res,filename);
+                                        await save_file(res,filename,abc.signal);
                                         resolve();
                                     }
                                     catch (e){
@@ -138,7 +139,7 @@ function run(task: Task) {
                                 }
                             }
                         }
-                        const save_file  = async ({ body, status }:Response, filename:string) => {
+                        const save_file  = async ({ body, status }:Response, filename:string,signal:AbortSignal) => {
                             if (!body || status !== 200) throw new Error('unable to download file');
 
                             let buffer = new Uint8Array(0);
@@ -148,8 +149,11 @@ function run(task: Task) {
                                 c.set(b, a.length);
                                 return c;
                             }
-                            for await (const chunk of body) {  buffer = _append(buffer,chunk) };
-
+                            for await (const chunk of body) {
+                                if( signal.aborted ) return;
+                                buffer = _append(buffer,chunk) 
+                            };
+                            if( signal.aborted ) return;
                             await zip.push(buffer,filename);
                         }
                         for await (const page of fetch_args) {

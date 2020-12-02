@@ -2,6 +2,7 @@ import { ensureFile ,render } from "../lib/_mod.ts";
 import { DB } from "../deps.ts";
 import { join } from "./_deps.ts";
 import { getEntries } from "../api/_deps.ts";
+import alphanumSort from 'https://cdn.skypack.dev/alphanum-sort';
 
 const title = "";
 
@@ -29,5 +30,6 @@ async function getFilenames(path:string) {
     for( const { filename } of await getEntries(file)) {
         filenames.push(filename);
     }
-    return filenames.sort((a, b) => a.localeCompare(b, 'en', {numeric: true, ignorePunctuation: true}));
+    file.close();
+    return alphanumSort(filenames,undefined);
 }

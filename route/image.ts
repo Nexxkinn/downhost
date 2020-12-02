@@ -15,5 +15,6 @@ export default async function handler(id:number,img_name:string,catalog_dir:stri
             break;
         }
     }
+    file.close();
     return res;
 }
