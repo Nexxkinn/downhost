@@ -1,5 +1,5 @@
 // import { DB } from "../deps.ts";
-export { de } from '../lib/_mod.ts';
+export { de,en } from '../lib/_mod.ts';
 export { log } from '../lib/_mod.ts';
 
 export type DownMeta = {

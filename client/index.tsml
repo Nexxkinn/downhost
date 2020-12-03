@@ -82,7 +82,7 @@
             width: 100%;
         }
 
-        .list {
+        .grid-list {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
@@ -129,10 +129,10 @@
         <fast-divider></fast-divider>
         <div id="panel">
             <div id="catalogPanel" hidden>
-                
+                <fast-accordion id="cataloglist" class="catalog-list" ></fast-accordion>
             </div>
             <div id="libraryPanel" hidden>
-                <div id="list" class="list"></div>
+                <div id="liblist" class="grid-list"></div>
             </div>
         </div>
         </div>

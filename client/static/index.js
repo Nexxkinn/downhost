@@ -1,5 +1,28 @@
 window.onload = init;
 
+/**
+ * @typedef {Object} lib_item
+ * @property {number} id
+ * @property {() => void} remove
+ */
+
+ /**
+  * @typedef {Object} downlist_item
+  * @property {number} id
+  * @property {(size_down:number) => void} update
+  * @property {() => void} remove
+  */
+
+/**
+ * @type {Array<lib_item>}
+ */
+const _lib  = new Array();
+
+/**
+ * @type {Array<downlist_item>}
+ */
+const _down = new Array();
+
 async function init() {
 
     const field    = document.getElementById('field');
@@ -25,11 +48,16 @@ async function init() {
     document.getElementById('dialog-close').onclick = () => dialog.hidden = true;
 
     submit.onclick = async (_) => {
+        // add loading
+        field.disabled = true;
+        submit.disabled = true;
         const url = field.value;
         if (!url) return;
         const body = { url };
         const gql = await req({ func:'add', body });
         field.value = "";
+        field.disabled = false;
+        submit.disabled = false;
         console.log(gql);
     }
 
@@ -60,8 +88,10 @@ async function init() {
 }
 
 async function refreshList() {
-    const res = await req({ func:'downlist' });
-    updatelist(res);
+    const down = await req({ func:'downlist' });
+    const lib  = await req({ func:'library' });
+    liblist_update(lib);
+    downlist_update(down);
     window.setTimeout(refreshList, 1000);
 }
 
@@ -78,33 +108,67 @@ async function req({ func, body = {} }) {
     return await res.json();
 }
 
-function updatelist(list) {
-    const table = document.getElementById('list');
+/**
+ * 
+ * @param {{id:number,title:string}[]} list 
+ */
 
-    for (const item of list) {
-        const { id, title, size,size_down, status } = item;
-
-        const percent = Number(size_down) != 0 ? size*100/size_down : '0';
-
+function liblist_update(list) {
+    const table = document.getElementById('liblist');
+    // remove unlisted item
+    for (const {id, remove} of _lib){
         let isListed = false;
-        for (const child of table.children) {
-            if (child.index === id) {
-                updateItem(child, { percent, status });
-                isListed = true;
-                break;
-            }
+        for(const { id:item_id } of list) {
+            if ( item_id === id ) { isListed = true; break; }
         }
-        if (!isListed) {
-            table.appendChild(createItem({ id, title, percent, status }))
+        if(!isListed) { remove(); _lib.splice(_lib.findIndex((x) => x.id === id),1)}
+    }
+
+    // update
+    for (const item of list) {
+        let isListed = false;
+        for (const child of _lib) {
+            if (child.id === item.id) { isListed = true; break; }
         }
+        if (!isListed) { _lib.push(liblist_item(table,item)) }
     }
 }
 
-async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * 
+ * @param {{id:number, title:string, status:number, size:number, size_down:number}[]} list 
+ */
+function downlist_update(list) {
+    const table = document.getElementById('cataloglist');
+    // remove unlisted item
+    for (const {id, update, remove} of _down){
+        let isListed = false;
+        for(const { id:item_id, size_down } of list) {
+            if ( item_id === id ) { 
+                isListed = true;
+                update(size_down);
+                break; }
+        }
+        if(!isListed) { remove(); _down.splice(_down.findIndex((x) => x.id === id),1)}
+    }
+
+    // update
+    for (const item of list) {
+        let isListed = false;
+        for (const child of _down) {
+            if (child.id === item.id) { isListed = true; break; }
+        }
+        if (!isListed) { _down.push(downlist_item(table,item)) }
+    }
 }
 
-function createItem({ id, title, percent = '', status = 0 }) {
+/**
+ * 
+ * @param {HTMLElement} parent 
+ * @param {{id:number, title:string}} args
+ */
+function liblist_item(parent,args) {
+    const { id, title } = args;
     const item = document.createElement('fast-card');
 
     const thumb = document.createElement('img');
@@ -113,50 +177,46 @@ function createItem({ id, title, percent = '', status = 0 }) {
                           border-radius:4px;`;
 
     const div = document.createElement('div');
-
-    if (status === 3) {
-        const link = document.createElement('a');
-              link.href = '/reader/'+id;
-              link.append(thumb);
-        div.append(link);
-    }
-    else {
-        div.append(thumb);
-    }
+    const link = document.createElement('a');
+          link.href = '/reader/'+id;
+          link.append(thumb);
+    div.append(link);
 
     const content = document.createElement('div');
           content.style = "width:100%;";
           content.innerHTML = `<div title="${title}" class="title" id="item-title">${title}</div>`
-          //<div name="stat">${status}</div>;
-          //<div name="prog">${percent}</div>
 
     item.index = id;
     item.append(div,content);
-    // debug
-    //item.expanded = true;
-    //item.innerHTML = "".concat(head);
-    // displaySkeleton(item);
-    return item;
+    parent.appendChild(item);
+
+    const remove = () =>{ parent.removeChild(item)};
+
+    return {id,remove};
 }
+
 
 /**
  * 
- * @param {HTMLElement} element 
- * @param {any} item 
+ * @param {HTMLElement} parent 
+ * @param {{id:number,title:string,size:number,size_down:number}} args
  */
-function updateItem(element, { percent, status }) {
-    return;
-    [head, perc, stat] = [...element.children];
-    perc.innerHTML = String(percent);
-    stat.innerHTML = String(status);
-}
+function downlist_item(parent, args) {
+    const {id,title,size,size_down} = args;
 
-/**
- * 
- * @param {HTMLElement} element 
- */
-function displaySkeleton(element){
-    const placeholder = document.getElementById('placeholder').cloneNode(true);
-    placeholder.hidden = false;
-    element.appendChild(placeholder);
+    const item = document.createElement('fast-accordion-item');
+    const head = document.createElement('span');
+          head.slot = 'heading';
+          head.innerHTML = title+'/'+size_down+'/'+size;
+    item.append(head);
+    item.index = id;
+    parent.appendChild(item);
+
+    const update = (size_down) => {
+        head.innerHTML = title+'/'+size_down+'/'+size;
+    };
+    const remove = () => {
+        parent.removeChild(item);
+    }
+    return {id,update,remove};
 }

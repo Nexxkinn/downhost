@@ -1,11 +1,8 @@
 import { Application, Router, DB, contentType } from './deps.ts';
-import { log, loadConfig, ensureDir } from './lib/_mod.ts';
+import { log, config, ensureDir } from './lib/_mod.ts';
 import { index, reader, thumb, image } from './route/_mod.ts';
 import { api } from './api/_mod.ts';
 import { info } from './index.ts';
-
-log("load config file");
-const config = await loadConfig();
 
 console.log(
 `#=============================#

@@ -2,7 +2,7 @@ import * as hnx from './hnx.ts';
 import * as chk from './chk.ts';
 import * as exh from './exh.ts';
 import * as nhn from './nhn.ts';
-import { de } from './_deps.ts';
+import { de, en, DownMeta } from './_deps.ts';
 
 // TODO: fix these redudancies.
 const srvc:any = { 
@@ -19,4 +19,13 @@ const dict:{ [key: string]: string } = {
     'k1you3qybhya43qhrf...':'k1yo4'
 }
 
-export const service = (key:string) => srvc?.[de(dict?.[key])]; 
+export const service = (key:string) => srvc?.[de(dict?.[key])];
+
+export async function resolve(link: URL): Promise<DownMeta> {
+    const hostname = en(link.hostname);
+    const srvc = service(hostname);
+    if (!srvc) throw new Error(`Unable to resolve: ${link.href}`);
+    const metadata: DownMeta = await srvc.metadata(link.href);
+    // console.log(metadata);
+    return metadata;
+}

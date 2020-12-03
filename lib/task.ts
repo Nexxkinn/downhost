@@ -1,11 +1,10 @@
-import { en, de, loadConfig, ensureFile, log } from './_mod.ts';
+import { en, de, config, ensureFile, log } from './_mod.ts';
 import { service } from '../script/_mod.ts';
 import { join, create_zip } from './_deps.ts';
 import { DownMeta, DownType, PageRequest } from "../script/_deps.ts";
 import { DB } from "../api/_deps.ts";
 
 const TaskList: Promise<any>[] = new Array();
-const config = await loadConfig();
 
 export enum ActionMode { STOP, START, RESUME };
 
@@ -13,43 +12,69 @@ export const appendTask = (task: Task) => TaskList.push(run(task));
 
 export class Task {
     private _action: ActionMode;
-    private _url: string;
+    private _service: DownMeta;
     private _db: DB;
 
-    constructor({ url, db, action = ActionMode.START }: { url: string; db: DB; action?: ActionMode; }) {
-        this._url = url;
+    constructor({ service, db, action = ActionMode.START }: { service: DownMeta; db: DB; action?: ActionMode; }) {
+        this._service = service;
         this._action = action;
         this._db = db;
     }
 
-    get url() { return this._url }
+    get service() { return this._service }
     get action() { return this._action }
     get db() { return this._db }
 
 }
 
+function gen_filename(srvc:string,uid:string,title:string) {
+    const header = `[${srvc}][${uid}]`;
+    let name = '';
+    let step = 0 ;
+    do {
+        switch(step)
+        {
+            case 0: { // remove unicode escape strings
+                name = title.replace(/&(?:\#(?:(?<dec>[0-9]+)|[Xx](?<hex>[0-9A-Fa-f]+))|(?<named>[A-Za-z0-9]+));/g,'');
+                step ++;
+                break;
+            }
+            case 1: { // remove second or alt title
+                name = name.split('|')[0];
+                step ++;
+                break;
+            }
+            case 2: { // limit to first 180 letters only.
+                name = name.slice(0,180);
+                step ++;
+                break;
+            }
+            case 3: { // retain title only
+                name = name.replace(/[\[\{](.*?)[\}\]]/g,'');
+                step ++;
+                break;
+            }
+            default : { // last chance. header only.
+                name = '';
+                break;
+            }
+        }
+    }
+    while( header.length + name.length + 4 > 200 )
+    const filename = header + name.replace(/[/\\?%*:|"<>]/g,'-') +'.zip';
+    log   (filename);
+    return filename;
+}
+
 function run(task: Task) {
     const pto = new Promise(async (rej) => {
-        const { url, db, action } = task
+        const { service, db, action } = task
         switch (action) {
             case ActionMode.START: {
-                const { download: fetch_args, thumbnail, srvc, type, title, length, uid } = await resolve(url);
+                const { download: fetch_args, srvc, type, title, length, uid } = service;
                 const hash = srvc + uid;
 
-                // download thumbnail
-                const thumb_path = join(config.temp_dir,'thumb',hash);
-                if (!await ensureFile(thumb_path)) {
-                    const thumb_file = await Deno.create(thumb_path);
-                    const { body } = await fetch(thumbnail.input, thumbnail.init);
-                    if (body) { for await (const chunk of body) { thumb_file.writeSync(chunk) } }
-                    thumb_file.close();
-                }
-                
-                db.query("INSERT INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, url, title,length, 0])
-
-                let name = title.replace(/&(?:\#(?:(?<dec>[0-9]+)|[Xx](?<hex>[0-9A-Fa-f]+))|(?<named>[A-Za-z0-9]+));/g,'');
-                    name = name.replace(/[/\\?%*:|"<>]/g,'-');
-                const file_name = `[${srvc}][${uid}] ${name}.zip`;
+                const file_name = gen_filename(srvc,uid,title);
                 
                 switch (type) {
                     case DownType.BULK: {
@@ -188,14 +213,4 @@ function run(task: Task) {
 
     })
     return pto;
-}
-
-async function resolve(link: string): Promise<DownMeta> {
-    const url = new URL(link);
-    const hostname = en(url.hostname);
-    const srvc = service(hostname);
-    if (!srvc) throw new Error(`Unable to resolve: ${link}`);
-    const metadata: DownMeta = await srvc.metadata(link);
-    //console.log(metadata);
-    return metadata;
 }
