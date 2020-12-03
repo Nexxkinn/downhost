@@ -13,15 +13,18 @@ export const appendTask = (task: Task) => TaskList.push(run(task));
 export class Task {
     private _action: ActionMode;
     private _service: DownMeta;
+    private _url: URL;
     private _db: DB;
 
-    constructor({ service, db, action = ActionMode.START }: { service: DownMeta; db: DB; action?: ActionMode; }) {
+    constructor({url, service, db, action = ActionMode.START }: { url:URL, service: DownMeta; db: DB; action?: ActionMode; }) {
+        this._url = url;
         this._service = service;
         this._action = action;
         this._db = db;
     }
 
     get service() { return this._service }
+    get url() { return this._url }
     get action() { return this._action }
     get db() { return this._db }
 
@@ -68,13 +71,14 @@ function gen_filename(srvc:string,uid:string,title:string) {
 
 function run(task: Task) {
     const pto = new Promise(async (rej) => {
-        const { service, db, action } = task
+        const { url, service, db, action } = task
         switch (action) {
             case ActionMode.START: {
                 const { download: fetch_args, srvc, type, title, length, uid } = service;
                 const hash = srvc + uid;
-
                 const file_name = gen_filename(srvc,uid,title);
+
+                db.query("INSERT INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, url.href, title,length, 0])
                 
                 switch (type) {
                     case DownType.BULK: {

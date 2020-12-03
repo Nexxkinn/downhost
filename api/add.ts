@@ -15,9 +15,7 @@ export default async function handler({ url, db }: { url:URL, db: DB }){
         if (body) { for await (const chunk of body) { thumb_file.writeSync(chunk) } }
         thumb_file.close();
     }
-
-    db.query("INSERT INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, url.href, title,length, 0])
     
-    appendTask(new Task({ service, db }));
+    appendTask(new Task({url, service, db }));
     return JSON.stringify({ status:true });
 }

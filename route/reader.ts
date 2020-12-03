@@ -1,8 +1,7 @@
 import { ensureFile ,render } from "../lib/_mod.ts";
-import { DB } from "../deps.ts";
+import { alphanumSort, DB } from "../deps.ts";
 import { join } from "./_deps.ts";
 import { getEntries } from "../api/_deps.ts";
-import alphanumSort from 'https://cdn.skypack.dev/alphanum-sort';
 
 const title = "";
 
