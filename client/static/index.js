@@ -130,7 +130,7 @@ function liblist_update(list) {
         for (const child of _lib) {
             if (child.id === item.id) { isListed = true; break; }
         }
-        if (!isListed) { _lib.push(liblist_item(table,item)) }
+        if (!isListed) { _lib.unshift(liblist_item(table,item)) }
     }
 }
 
@@ -158,7 +158,7 @@ function downlist_update(list) {
         for (const child of _down) {
             if (child.id === item.id) { isListed = true; break; }
         }
-        if (!isListed) { _down.push(downlist_item(table,item)) }
+        if (!isListed) { _down.unshift(downlist_item(table,item)) }
     }
 }
 
@@ -188,7 +188,7 @@ function liblist_item(parent,args) {
 
     item.index = id;
     item.append(div,content);
-    parent.appendChild(item);
+    parent.prepend(item);
 
     const remove = () =>{ parent.removeChild(item)};
 
@@ -210,7 +210,7 @@ function downlist_item(parent, args) {
           head.innerHTML = title+'/'+size_down+'/'+size;
     item.append(head);
     item.index = id;
-    parent.appendChild(item);
+    parent.prepend(item);
 
     const update = (size_down) => {
         head.innerHTML = title+'/'+size_down+'/'+size;
