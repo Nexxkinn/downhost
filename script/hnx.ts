@@ -92,32 +92,59 @@ async function getToken(u: string, p: string) {
     return cookie;
 }
 function parse_data(input: string) {
-        return parse_data_v2(input);
+    return parse_data_v3(input);
 }
 
-function parse_data_v2(input: string) {
+
+function parse_data_v3(input: string) {
     let data_atob = atob(input);
     let key = new Array();
     let decoded = '';
-    
-    for (let i = 0; i < 0x100; i++) key.push(i) 
-    
-    // generate key
+
+    let var_1 = [], var_2 = [];
+
+    // unknown 1
+    for (let i = 0x2; var_2.length < 0x10; ++i) {
+        if (!var_1[i]) {
+            var_2.push(i);
+            for (let x = i << 0x1; x <= 0x100; x += i)
+                var_1[x] = 1;
+        }
+    }
+
+    // unknown 2
+    let var_3 = 0x0;
+    for (let i = 0x0; i < 0x40; i++) {
+        var_3 = var_3 ^ data_atob.charCodeAt(i);
+        for (let x = 0x0; x < 0x8; x++) var_3 = var_3 & 0x1 ? var_3 >>> 0x1 ^ 0xc : var_3 >>> 0x1;
+    }
+    var_3 = var_3 & 0xf; // 0 - 15.
+
+    for (let i = 0; i < 0x100; i++) key.push(i)
+
     let offset = 0x0;
     for (let i = 0x0; i < 0x100; i++) {
         offset = (offset + key[i] + data_atob.charCodeAt(i % 0x40)) % 0x100;
         [key[i], key[offset]] = [key[offset], key[i]];
     }
 
-    // parse data using key
     offset = 0x0;
-    let x=0, decode = 0x0, randr = 0x0;
+    let x = 0, decode = 0x0, d_0 = 0x0;
+    let var_4 = var_2[var_3];
     for (let i = 0x0; i + 0x40 < data_atob.length; i++) {
-        x = (x + 1) % 0x100;
-        offset = (randr + key[(offset + key[x]) % 0x100]) % 0x100;
-        randr = (randr + x + key[x]) % 0x100;
+
+        x = (x + var_4) % 0x100;
+        const o_1 = key[(offset + key[x]) % 0x100];
+        offset    = (d_0        + o_1) % 0x100;
+        d_0       = (d_0    + x + key[x]) % 0x100;
+
         [key[x], key[offset]] = [key[offset], key[x]];
-        decode = key[(offset + key[(x + key[(decode + randr) % 0x100]) % 0x100]) % 0x100];
+
+        const get_key = (code:number[]):any => { // [d0,decode,x,offset]
+            if(code.length === 1) return code[0];
+            return key[ (code.shift() + get_key(code)) % 0x100];
+        }
+        decode = get_key([offset,x,decode,d_0]);
         decoded += String.fromCharCode(data_atob.charCodeAt(i + 0x40) ^ decode);
     }
     const parsed = JSON.parse(decoded);
@@ -132,40 +159,89 @@ function parse_data_v2(input: string) {
     return data
 }
 
+function parse_data_v2(input: string) {
+    let data_atob = atob(input);
+    let key = new Array();
+    let decoded = '';
 
-// function parse_data_v1(input: string) {
-//     let data_atob = atob(input);
-//     let token = data_atob.slice(0x0, 0x40);
-//     let key = new Array();
-//     let decoded = '';
+    for (let i = 0; i < 0x100; i++) key.push(i)
 
-//     for (let i = 0; i < 0x100; i++) key.push(i)
+    // generate key
+    let offset = 0x0;
+    for (let i = 0x0; i < 0x100; i++) {
+        offset = (offset + key[i] + data_atob.charCodeAt(i % 0x40)) % 0x100;
+        [key[i], key[offset]] = [key[offset], key[i]];
+    }
 
-//     // generate key
-//     let offset = 0x0;
-//     for (let i = 0x0; i < 0x100; i++) {
-//         offset = (offset + key[i] + token.charCodeAt(i % token.length)) % 0x100;
-//         [key[i], key[offset]] = [key[offset], key[i]];
-//     }
+    // parse data using key
+    offset = 0x0;
+    let x = 0, decode = 0x0, randr = 0x0;
+    for (let i = 0x0; i + 0x40 < data_atob.length; i++) {
+        x = (x + 1) % 0x100;
 
-//     // parse data using key
-//     offset = 0x0;
-//     let randr = 0x0;
-//     for (let i = 0x0; i < data_atob.length - 0x40; i++) {
-//         randr = (randr + 0x1) % 0x100;
-//         offset = (offset + key[randr]) % 0x100;
-//         [key[randr], key[offset]] = [key[offset], key[randr]];
-//         decoded += String.fromCharCode(data_atob.charCodeAt(i + 0x40) ^ key[(key[randr] + key[offset]) % 0x100]);
-//     }
-//     console.log(decoded);
-//     const parsed = JSON.parse(decoded);
-//     const { b, r, i, f } = parsed;
-//     const data: { link: string, filename: string }[] = [];
-//     for (const { h, p } of f) {
-//         data.push({
-//             link: b + r + h + '/' + i + '/' + p,
-//             filename: p
-//         });
-//     };
-//     return data
-// }
+        offset = ( randr + key[ ( offset + key[x] ) % 0x100 ] ) % 0x100;
+        randr  = (randr + x + key[x]) % 0x100;
+
+        [key[x], key[offset]] = [key[offset], key[x]];
+
+        const get_key = (code:number[]):any => {
+            if(code.length === 1) return code[0];
+            return key[ (code.shift() + get_key(code)) % 0x100];
+        }
+        decode = get_key([offset,x,decode,randr])
+
+        decoded += String.fromCharCode(data_atob.charCodeAt(i + 0x40) ^ decode);
+    }
+    const parsed = JSON.parse(decoded);
+    const { b, r, i, f } = parsed;
+    const data: { link: string, filename: string }[] = [];
+    for (const { h, p } of f) {
+        data.push({
+            link: b + r + h + '/' + i + '/' + p,
+            filename: p
+        });
+    };
+    return data
+}
+
+function parse_data_v1(input: string) {
+    let data_atob = atob(input);
+    let token = data_atob.slice(0x0, 0x40);
+    let key = new Array();
+    let decoded = '';
+
+    for (let i = 0; i < 0x100; i++) key.push(i)
+
+    // generate key
+    let offset = 0x0;
+    for (let i = 0x0; i < 0x100; i++) {
+        offset = (offset + key[i] + token.charCodeAt(i % token.length)) % 0x100;
+        [key[i], key[offset]] = [key[offset], key[i]];
+    }
+
+    // parse data using key
+    offset = 0x0;
+    let x = 0x0, decode = 0x0;
+    for (let i = 0x0; i < data_atob.length - 0x40; i++) {
+        x = (x + 1) % 0x100;
+
+        offset = (offset + key[x]) % 0x100;
+
+        [key[x], key[offset]] = [key[offset], key[x]];
+
+        decode = key[(key[x] + key[offset]) % 0x100];
+        decoded += String.fromCharCode(data_atob.charCodeAt(i + 0x40) ^ decode);
+    }
+    const parsed = JSON.parse(decoded);
+    const { b, r, i, f } = parsed;
+    const data: { link: string, filename: string }[] = [];
+    for (const { h, p } of f) {
+        data.push({
+            link: b + r + h + '/' + i + '/' + p,
+            filename: p
+        });
+    };
+    return data
+}
+
+// const data_v3 = 'L4wHgH8XoDPX8G1j+7giYXqmLgCNwH4tNjsalTzBM02qGRsDLmsr4fm3ZPU4QmaqmrktNqcMpKjJxRwUtf6/G/MCWCc1VXyhLoUGjes1oC+rJ/8YQgLehe16Zro0S3S8mGE8WgBMLqRdIiNfvhXcV14eYAAScGW0wiPifA8OtT4vPbAAtl9eVwp5P+rrqGbrwm5W1AnmA/8AfXPAbDojoFOM0zpoHIfbB/5eAlha8xrQ8vEEj0lwtCWdrA0OImdkM46GqWVRKOlG+hTnJpM2nq8JHODJNULCFI7dGQQT17wPC7Tn2VH9SSLqQrqapcRzK7IhAV3xy+C9VP6GkJCR/4rvzuIattKFqFWTo5PguamZMxTNT8B0OGl7+39OIoO8Hp762Sqx6QQZRqNceMpCa3WMpxXQkAxI/OG1z9eQBny0A0KHWW6PrPNBvuIsSIjzgPrGgYWFWGQZoKCy5gPgesNhdBpk/g/U9RquThr0uHlnyZFL8RTZefhnPT/n5ig9KIpqKh9PRGEH4KIQnC+77kiZZG6Hyg/yXcoXAEw6fxc06EUj6AxYUXA8oY3gjTJUHVge5zEiE9YKpORWZhdOj6rfYUnT3Od8+GX8M18xJIRDkPfna/lT4wcz4G/2HQDN/p6xg2MQ79gsOjVGtQ2fKAxw6kUeQMmhK+kbvwwbP02m7o/otJFzZbCiwZ5v9UQ4g6GDHhH/NgDUPlwx+FI/F7MCOp1RS4pXJWMMiqyu4J6dc5lcOvu/3L+G/n7PDyIkHLqzyiyNRL/Su4nO/KeSP/sqUYxzPcLDMZoxszvx7TZVy/CWxd3RIV432GvoxjganTpid42Wu3ihKe+D4ocg68cNv3eVwmIl0eKtvfebMQ+2l07TOr+duD4OIfbDvOezDds/spbE3hj2d0a+UQMkIoLeeQ2JgGeoSqrk0TC3JBy5Oidt/9s49GRgygSEAv4Lc3IYgyEmNj4szHL/WvNrfKgD7pF0R4r7Rlh71D3G6+6XJdiuV4+pE5LpU0rezf+dMCRn4YHrbBDkxtTPB15JOOb8pNig2n+nIzTQ92Xt/rmCXRejdxyoeY0bfUdM0gFzJp6NkgzhWOCGM8H2JqLkbZitNQgzO/pFLq5RnWsztjrjmM/0SybdC3FXcRXDCBKBFOfoNUDA8rtm7XVTih6ant+l/H0ZD5FG1MeAI+PCgKMejJd8naoemt0xlusz3AURPWk8uPvrc8UTfelt+3B/efUq31eFQDl1U39FMnVF6VIFxI9Y4vd9CiZ2llItD2VGNLhhLWf9jBY/GFtbSR8z3+b/oQJvRCOLGOuEsw8PAwDqUSHslkFJxFUIi3HMu5RH1pegGRv9DMbwELrDMmU4Vs/TNJq7IJHzEbooTO3VYbnzH1gFOrMFUP6QOOB55fGt/Am6BoVWKoTeYOGGZALElsup6FaCuNsUij4UVcmli0h6owsfdPRBk0h7EHMaQE3xqcRgNZLNTBimeVTRscqv9LlK924xwLBdwBHeA/NAcAFm7WKtxA3WiuPaD+cPJO7iDGV0pzczCP4l+NaOd/QTsj60MsO8FiOW98CkOJY1igKLbxC8ZN7qtPKzKNYuvfZjGE2rykzHQIiAB4LpVF1IElXfb3CIro9Rs6ByaTj1y49T5O0GsFH3IJBG/FHUnvFFo9Sgwx2CHlG//rIY+Va1SNSr1bDKqJurqh33OcgKLUCu9Fk/PodElXCTRcwd08rV8/wgjyR9uOO0qY6/rjXC7gqWVCbnB1k2DxXWquAVFkH/dmvySxRxImDOPDDTIQIjKIgVzMUDnusTsKElkRHHMj8ThKktj4x/GbDjkk0SrB3jmsEBgaHuVrChFy/QiYuLbWjP9863+UVKfWJbAND0o221rMFtbqsP3MSEZyW35WBz1MrBBqPcvVH3RVAy5c6yyNe4YezgC3+cuuuTvvHKqZAOfA==';
