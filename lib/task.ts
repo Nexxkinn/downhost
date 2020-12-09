@@ -113,31 +113,31 @@ function run(task: Task) {
 
                         let page_downloaded = 0;
                         /**
-                         * failed fetch stage
+                         * failed fetch diagram
                          * fetch_file()
                          *     V
                          * fetch_file() 3 tries
                          *     V
-                         * alt_download(old_download) -> fetch_file(new_download)
+                         * alt(old_download) -> fetch_file(new_download)
                          *     |
-                         * || if alt_download() = undefined || -> file is considered broken. skipping...
+                         * || if alt() = undefined || -> file is considered broken. skipping...
                          *     V
                          * fetch_file(new_download) 3 tries
                          *     V
                          * file is considered broken. skipping... 
                          * note: 
                          */
-                        const fetch_file = async (page: PageRequest, retry = 3, is_alt=false) => {
+                        const fetch_file = async (page: PageRequest, retry = 3, is_alt=false) : Promise<Boolean> => {
                             const { input, init, filename, alt } = page;
-                            let isTimeOut=false;
+                            const abc = new AbortController();
                             try {
                                 // this is our current implementation to make a timeout abort fetch
                                 // because Deno has yet to implement AbortController feature on fetch.
                                 // TODO    : Refactor this code to use AbortController() once available.
                                 // Tracker : https://github.com/denoland/deno/pull/6093
                                 await new Promise( async (resolve:any,reject:any) => {
-                                    const abc = new AbortController();
-                                    const id = setTimeout(() => { isTimeOut=true; abc.abort(); return reject('Timed out'); }, 30000);
+                                    
+                                    const id = setTimeout(() => { abc.abort(); return reject('Timed out'); }, 30000);
                                     try {
                                         const res = await fetch(input, init);
                                         await save_file(res,filename,abc.signal);
@@ -150,24 +150,32 @@ function run(task: Task) {
                                         clearTimeout(id);
                                     }
                                 })
+                                return true;
                             }
                             catch (e) {
-                                if(retry <= 0 || isTimeOut ) {
+                                if(retry <= 0 || abc.signal.aborted) {
                                     if(alt && !is_alt) {
-                                        log(`Stop downloading ${filename}, requesting alternate download...`);
-                                        const new_page = await alt(page) // request alternate download
-                                        await fetch_file(new_page as PageRequest,3,true);
+                                        log(`Stop downloading ${filename}, requesting alternate link...`);
+                                        const new_page = await alt(page)
+                                        log(`Received alternate link, downloading ${filename}...`)
+                                        return await fetch_file(new_page as PageRequest,3,true);
                                     }
                                     else {
-                                        log(`${filename} is considered broken, skipping...`)
+                                        log(`${filename} is considered broken, skipping...`);
+                                        return false;
                                     }
                                 }
-                                else {
+                                else if (retry >= 0) {
                                     log(`Problem downloading ${filename}, retrying... (${retry})`);
-                                    await fetch_file(page,retry-=1,is_alt);
+                                    return await fetch_file(page,retry-=1,is_alt);
+                                }
+                                else {
+                                    log(`${filename} is considered broken, skipping...`);
+                                    return false;
                                 }
                             }
                         }
+
                         const save_file  = async ({ body, status }:Response, filename:string,signal:AbortSignal) => {
                             if (!body || status !== 200) throw new Error('unable to download file');
 
@@ -185,11 +193,13 @@ function run(task: Task) {
                             if( signal.aborted ) return;
                             await zip.push(buffer,filename);
                         }
+
                         for await (const page of fetch_args) {
                             log(`Downloading ${page.filename}`);
-                            await fetch_file(page);
-                            db.query("UPDATE download SET size_down=? WHERE hash=? ", [page_downloaded += 1, hash]);
+                            const is_downloaded = await fetch_file(page);
+                            if (is_downloaded) db.query("UPDATE download SET size_down=? WHERE hash=? ", [page_downloaded += 1, hash]);
                         }
+                        
                         log(JSON.stringify({ page_downloaded, length }))
 
                         log('compile gallery into compressed zip...');
@@ -210,7 +220,8 @@ function run(task: Task) {
                 break;
             }
             case ActionMode.RESUME: {
-                // grab meta from database
+                // grab url meta from database
+                // read last page downloaded ?
                 // not yet implemented
             }
         }

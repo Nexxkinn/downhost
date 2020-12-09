@@ -86,14 +86,22 @@ export async function metadata(link: string): Promise<DownMeta> {
           }
           let nl = '';
 
-          const alt = async function ({ init, filename }: PageRequest): Promise<PageRequest> {
-            const alt_fetch = await fetch(token+s_url + '?nl=' + nl, { headers: { cookie } });
-            const alt_html  = await alt_fetch.text();
-            const alt_input = grab('<img id="img" src="', '" style=', alt_html);
-            return {
-              input: alt_input,
-              init,
-              filename
+          const alt = async function (args: PageRequest): Promise<PageRequest> {
+            const { init, filename } = args;
+            try {
+              const alt_fetch = await fetch(token+s_url + '?nl=' + nl, { headers: { cookie } });
+              const alt_html  = await alt_fetch.text();
+              const alt_input = grab('<img id="img" src="', '" style=', alt_html);
+              return {
+                input: alt_input,
+                init,
+                filename
+              }
+            }
+            catch(e) {
+              log('Remote host is probably angry, Retrying in 10s...');
+              await new Promise(r => setTimeout(r, 10000));
+              return await alt(args);
             }
           }
 

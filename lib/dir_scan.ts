@@ -1,7 +1,7 @@
 import { DownConfig, getEntries } from "./_deps.ts";
 import { alphanumSort, DB, join } from "../deps.ts";
 import { en, config } from "./_mod.ts";
-import { resize } from "https://deno.land/x/deno_image/mod.ts";
+import { resize } from "https://deno.land/x/deno_image@v0.0.3/mod.ts";
 
 /**
  * 
