@@ -26,12 +26,6 @@
             margin: 0 auto;
             padding: 1em;
         }
-
-        fast-card {
-            display: grid;
-            grid-auto-rows: 190px 60px;
-            width: 150px;
-        }
         
         .header {
             display: inline-flex;
@@ -82,10 +76,24 @@
             width: 100%;
         }
 
-        .grid-list {
+        .lib-list {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
+        }
+
+        
+        .lib-list fast-card {
+            display: grid;
+            grid-auto-rows: 190px 60px;
+            width: 150px;
+        }
+
+        .catalog-list {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .nav {
@@ -96,13 +104,17 @@
             flex-grow: 1;
         }
 
+        .settings-dialog {
+            padding: 0 14px;
+        }
+
         @media only screen and (min-width: 600px) {
             .nav {
                 display: unset;
             }
             .nav-button {
                 flex-grow: unset;
-                width: 80px;
+                min-width: 80px;
             }
         }
     </style>
@@ -123,23 +135,26 @@
             <fast-button id="submit" hidden>Download</fast-button>
         </div>
         <div id="nav" class="nav">
-            <fast-button class="nav-button" id="catalogTab" appearance="accent" >Catalog</fast-button>
+            <fast-button class="nav-button" id="catalogTab" appearance="accent" >Downloads</fast-button>
             <fast-button class="nav-button" id="libraryTab" appearance="stealth">Library</fast-button>
         </div>
         <fast-divider></fast-divider>
         <div id="panel">
             <div id="catalogPanel" hidden>
-                <fast-accordion id="cataloglist" class="catalog-list" ></fast-accordion>
+                <div id="cataloglist" class="catalog-list" ></div>
             </div>
             <div id="libraryPanel" hidden>
-                <div id="liblist" class="grid-list"></div>
+                <div id="liblist" class="lib-list"></div>
             </div>
         </div>
         </div>
         <fast-dialog id="settings-dialog" modal hidden>
-            <div>
-                <h2>Dialog with text and a button.</h2>
+            <div class="settings-dialog">
+                <h2>Settings</h2>
+                <span>To be added later.</span> <br/>
                 <fast-button id="dialog-close">Close</fast-button>
+                <h2>About</h2>
+                <div>DownHost v. 0.0.1</div>
             </div>
         </fast-dialog>
     </fast-design-system-provider>

@@ -85,6 +85,11 @@ async function init() {
         submit.hidden = !field.value.startsWith('http');
     }
     await refreshList();
+
+    
+    // dummy
+    // const table = document.getElementById('cataloglist');
+    // downlist_item(table,{id:998,title:'title',status:1,size:100,size_down:10})
 }
 
 async function refreshList() {
@@ -204,16 +209,24 @@ function liblist_item(parent,args) {
 function downlist_item(parent, args) {
     const {id,title,size,size_down} = args;
 
-    const item = document.createElement('fast-accordion-item');
-    const head = document.createElement('span');
-          head.slot = 'heading';
-          head.innerHTML = title+'/'+size_down+'/'+size;
+    const item = document.createElement('fast-card');
+          item.clientHeight = 0;
+          item.style = `
+          width:100%;
+          padding:10px;
+          `
+    const prog = document.createElement('fast-progress');
+          prog.value = size_down ? (size_down / size) * 100 : null;
+          prog.max = size;
+    const head = document.createElement('div');
+          head.append(title);
+          head.append(prog);
     item.append(head);
     item.index = id;
     parent.prepend(item);
 
     const update = (size_down) => {
-        head.innerHTML = title+'/'+size_down+'/'+size;
+        prog.value = (size_down / size) * 100;
     };
     const remove = () => {
         parent.removeChild(item);

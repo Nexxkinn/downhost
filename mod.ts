@@ -94,5 +94,13 @@ function start_database() {
                    size INTERGER,
                    size_down INTERGER
                )`);
+        //    db.query(`CREATE TABLE IF NOT EXISTS
+        //         tag (
+        //             id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //             hash TEXT NOT NULL UNIQUE,
+        //             key TEXT NOT NULL,
+        //             val TEXT NOT NULL,
+        //             z_index INTERGER  
+        //         )`)
     return db;
 }
