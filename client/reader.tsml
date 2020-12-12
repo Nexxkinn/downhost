@@ -22,7 +22,9 @@
             font-family: SegoeUIVF, Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif;
             max-width: 842px;
             margin: 0 auto;
-            padding: 1em;
+        }
+        img {
+            padding: 8px 0;
         }
     </style>
 </head>
