@@ -50,18 +50,6 @@
             margin-left: 1em;
         }
 
-        .title {
-            font-weight: 500;
-            font-size: 14px;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            padding: 10px 10px 0 10px;
-            background: var(--neutral-fill-card-rest);
-            display: -webkit-box;
-            -webkit-box-orient: vertical; 
-            -webkit-line-clamp: 2;
-        }
-
         .content {
             width: 100%;
             display: flex;
@@ -82,11 +70,29 @@
             gap: 15px;
         }
 
-        
         .lib-list fast-card {
             display: grid;
-            grid-auto-rows: 190px 60px;
             width: 150px;
+        }
+
+        .lib-list .option {
+            border-radius:unset;
+            grid-area: opt;
+            width:50%;
+        }
+
+        .lib-list .title {
+            grid-area: title;
+            font-weight: 500;
+            font-size: 14px;
+            width: 130px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            padding: 10px 10px 0 10px;
+            background: var(--neutral-fill-card-rest);
+            display: -webkit-box;
+            -webkit-box-orient: vertical; 
+            -webkit-line-clamp: 2;
         }
 
         .catalog-list {
@@ -112,9 +118,36 @@
             .nav {
                 display: unset;
             }
+
             .nav-button {
                 flex-grow: unset;
                 min-width: 80px;
+            }
+        }
+
+        /* desktop or pointer-supported devices */
+        @media (hover: hover) {
+            .lib-list .option {
+                display: none;
+            }
+
+            .lib-list fast-card {
+                grid-auto-rows: 190px 60px;
+            }
+            
+            .lib-list fast-card:hover {
+                grid-auto-rows: 150px 100px;
+            }
+
+            .lib-list fast-card:hover .option {
+                display: inline-grid;
+            }
+        }
+
+        /* smartphones or touch-supported devices */
+        @media (hover: none) {
+            .lib-list fast-card {
+                grid-auto-rows: 150px 100px;
             }
         }
     </style>

@@ -178,8 +178,7 @@ function liblist_item(parent,args) {
 
     const thumb = document.createElement('img');
           thumb.src = "/thumb/"+id;
-          thumb.style = ` width:100%;
-                          border-radius:4px;`;
+          thumb.style = ` width:100%;`;
 
     const div = document.createElement('div');
     const link = document.createElement('a');
@@ -187,10 +186,29 @@ function liblist_item(parent,args) {
           link.append(thumb);
     div.append(link);
 
-    const content = document.createElement('div');
-          content.style = "width:100%;";
-          content.innerHTML = `<div title="${title}" class="title" id="item-title">${title}</div>`
+    const rem = document.createElement('fast-button');
+          rem.appearance = 'stealth';
+          rem.className = 'option';
+          rem.append('remove');
 
+    const info = document.createElement('fast-button');
+          info.appearance = 'stealth';
+          info.className = 'option';
+          info.append('info');
+
+    const name = document.createElement('div');
+          name.title = title;
+          name.className = 'title';
+          name.id = 'item-title';
+          name.append(title);
+
+    const content = document.createElement('div');
+          content.style = `
+          width:100%;
+          grid-template-areas: 'opt opt' 'title title'; 
+          `;
+          content.append(info,rem,name);
+          
     item.index = id;
     item.append(div,content);
     parent.prepend(item);
