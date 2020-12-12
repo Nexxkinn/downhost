@@ -1,4 +1,4 @@
-window.onload = init;
+document.addEventListener("DOMContentLoaded",init);
 
 /**
  * @typedef {Object} lib_item
