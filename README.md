@@ -48,12 +48,11 @@ USE IT WITH YOUR OWN RISK!!!
 - no mechanism to resume paused/terminated jobs
 - most cases is still under happy path ( except download pipeline )
 - some depedencies is still waiting to be fixed:
-   - `deno_image` has type checking problem, promised to be fixed in the next release
    - `littlezip` needs to add a feature to recover file from terminated jobs to prevent file duplications
 
 ### Todo
 - Fancy directory listing
 - Reader client
-- Rewrite download pipeline
-- add more services
-- ~~add webtorrent (?)~~
+
+### Special Thanks
+- [feather icons](https://github.com/feathericons/feather)

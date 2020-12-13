@@ -1,7 +1,7 @@
 export { render } from './render.ts';
 export { React } from './react.tsx';
 export { en, de } from './detox.ts';
-export { Task, appendTask } from './task.ts';
+export { append_task } from './job_man.ts';
 export { log } from './log.ts';
 export { config } from './config.ts';
 export { ensureFile, ensureDir } from './ensureFileDir.ts';
