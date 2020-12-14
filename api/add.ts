@@ -21,6 +21,6 @@ export default async function handler({ url, db }: { url: URL, db: DB }) {
         return JSON.stringify({ status: true });
     }
     catch (e) {
-        return JSON.stringify({ status: false, message: e })
+        return JSON.stringify({ status: false, message: e.message })
     }
 }

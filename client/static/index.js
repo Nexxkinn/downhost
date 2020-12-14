@@ -188,29 +188,32 @@ function liblist_item(parent,args) {
 
     const rem = document.createElement('fast-button');
           rem.appearance = 'stealth';
-          rem.className = 'option';
-          rem.title = 'Remove this gallery'
-          rem.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`
+          rem.className  = 'option';
+          rem.title      = 'Remove this gallery'
+          rem.innerHTML  = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`
+          rem.onclick    = async () => {
+            item.style = ` pointer-events: none; opacity: 0.50;`;
+
+            const res  = await req({ func:'remove', body:{ id } });
+            
+            if(!res.status) item.style = '';
+          }
 
     const info = document.createElement('fast-button');
           info.appearance = 'stealth';
-          info.className = 'option';
-          info.title = 'View this gallery'
-          info.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`
-          
+          info.className  = 'option';
+          info.title      = 'View this gallery';
+          info.innerHTML  = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`
+          info.onclick    = () => window.open('/reader/'+id, '_blank');
+
     const name = document.createElement('div');
-          name.title = title;
+          name.title = decodeHtml(title);
           name.className = 'title';
           name.id = 'item-title';
-          name.append(title);
+          name.append(decodeHtml(title));
 
     const content = document.createElement('div');
-          content.style = `
-          width:100%;
-          grid-template-areas: 'opt opt' 'title title'; 
-          `;
+          content.style = ` width:100%; grid-template-areas: 'opt opt' 'title title'; `;
           content.append(info,rem,name);
           
     item.index = id;
@@ -241,8 +244,7 @@ function downlist_item(parent, args) {
           prog.value = size_down ? (size_down / size) * 100 : null;
           prog.max = size;
     const head = document.createElement('div');
-          head.append(title);
-          head.append(prog);
+          head.append(decodeHtml(title),prog);
     item.append(head);
     item.index = id;
     parent.prepend(item);
@@ -250,8 +252,16 @@ function downlist_item(parent, args) {
     const update = (size_down) => {
         prog.value = (size_down / size) * 100;
     };
+
     const remove = () => {
         parent.removeChild(item);
     }
+    
     return {id,update,remove};
+}
+
+function decodeHtml(html) {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
 }

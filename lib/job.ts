@@ -15,15 +15,9 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
         if (abc.signal.aborted) { isStopped = false; abc = new AbortController(); }
 
         // initialize database
-        const query = Array.from(db.query('SELECT id FROM catalog WHERE hash=? LIMIT 1', [hash]));
-        if (!query.length) {
-            db.query("INSERT INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, source.href, title, length, 0])
-            db.query("INSERT INTO download(hash) VALUES(?)", [hash]);
-        }
-        else {
-            // reset download
-            db.query('UPDATE download SET size=?,size_down=?  WHERE hash=?', [0,0,hash]);
-        }
+        db.query("INSERT OR IGNORE INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, source.href, title, length, 0])
+        db.query("INSERT OR IGNORE INTO download(hash) VALUES(?)", [hash]);
+        db.query('UPDATE download SET size=?,size_down=?  WHERE hash=?', [0,0,hash]);
 
         switch (type) {
             case DownType.BULK: {
