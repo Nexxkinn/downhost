@@ -1,5 +1,4 @@
 export { render } from './render.ts';
-export { React } from './react.tsx';
 export { en, de } from './detox.ts';
 export { append_task } from './job_man.ts';
 export { log } from './log.ts';
