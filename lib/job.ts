@@ -1,18 +1,19 @@
 import { en, de, config, ensureDir, ensureFile, log } from './_mod.ts';
-import { join, create_zip } from './_deps.ts';
+import { join, create_zip, status } from './_deps.ts';
 import { DownMeta, DownType, PageRequest } from "../script/_deps.ts";
 import { DB } from "../api/_deps.ts";
 
 
 export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() => void) {
-    let abc = new AbortController();
-    let isStopped = false;
     const { download, srvc, type, title, length, uid } = meta;
+    let _stat  = status.INITIALIZED;
+    let abc    = new AbortController();
     const hash = srvc + uid;
     const file_name = gen_filename(srvc, uid, title);
 
     const start  = async () => {
-        if (abc.signal.aborted) { isStopped = false; abc = new AbortController(); }
+        _stat = status.RUNNING;
+        if (abc.signal.aborted) { _stat = status.STOPPED; abc = new AbortController(); }
 
         // initialize database
         db.query("INSERT OR IGNORE INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, source.href, title, length, 0])
@@ -160,7 +161,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
     const stop   = async (msg:string) => {
         console.log(msg);
         abc.abort();
-        isStopped = true;
+        _stat = status.STOPPED;
         db.query("UPDATE catalog SET status=? WHERE hash=?", [2, hash]);
     }
 
@@ -172,7 +173,9 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
         remove();
     }
 
-    return { hash, srvc, isStopped, start, stop, cancel }
+    const stat = () => _stat;
+
+    return { hash, srvc, status:stat, start, stop, cancel }
 }
 
 function gen_filename(srvc: string, uid: string, title: string) {

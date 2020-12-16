@@ -1,32 +1,16 @@
-import { DownMode, DB } from './_deps.ts';
-import { default as downlist } from './downlist.ts';
-import { default as add } from "./add.ts";
+import { DB } from './_deps.ts';
+import { default as job_list } from './job_list.ts';
+import { default as job_update } from './job_update.ts';
+import { default as job_add } from "./job_add.ts";
 import { default as remove } from './remove.ts';
 import { default as library } from './library.ts';
 
-export async function api({ func, body }: any, db: DB): Promise<string | undefined> {
+export async function api({type, func, body }: any, db: DB): Promise<string | undefined> {
     try {
-        switch (func) {
-            case "downlist": {
-                const page = body.page;
-                return await downlist(page, db);
-            }
-            case "add": {
-                const url = new URL(body.url);
-                return await add({ url, db });
-            }
-            case "remove": {
-                const id = body.id;
-                return await remove({ id, db });
-            }
-            case "stop": {
-                const id = body.id;
-            }
-            case "library": {
-                //const path = body.path;
-                return await library({ path: '', db });
-            }
-            default: return undefined;
+        switch (type) {
+            case "job": return await job({func,body},db);
+            case "lib": return await lib({func,body},db);
+            default: return JSON.stringify({ status: false });
         }
     }
     catch (e) {
@@ -34,6 +18,33 @@ export async function api({ func, body }: any, db: DB): Promise<string | undefin
     }
 }
 
-function set(id: number, mode: DownMode) {
-    return true;
+async function job({func,body}:any,db:DB) {
+    switch (func) {
+        case 'list': {
+            return await job_list(db);
+        }
+        case 'add': {
+            return await job_add({ source: new URL(body.source), db });
+        }
+        case 'start': case 'stop': case 'cancel': {
+            return await job_update(body, db);
+        }
+        default: {
+            return JSON.stringify({ status: false });
+        }
+    }
+}
+
+async function lib({func,body}:any, db:DB) {
+    switch(func) {
+        case "remove": {
+            const { id } = body;
+            return await remove({ id, db });
+        }
+        case "dir": {
+            //const path = body.path;
+            return await library({ path: '', db });
+        }
+        default: return JSON.stringify({ status: false });
+    }
 }

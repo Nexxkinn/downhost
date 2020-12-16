@@ -9,3 +9,10 @@ export type DownConfig = {
     temp_dir:string,
     pass:string
 }
+
+export enum status {
+    INITIALIZED,
+    RUNNING,
+    STOPPED,
+    COMPLETED,
+}

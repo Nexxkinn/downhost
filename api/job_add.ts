@@ -2,9 +2,9 @@ import { join, DB } from "./_deps.ts";
 import { append_task, config, ensureFile } from "../lib/_mod.ts";
 import { resolve } from "../script/_mod.ts";
 
-export default async function handler({ url, db }: { url: URL, db: DB }) {
+export default async function handler({ source, db }: { source: URL, db: DB }) {
     try {
-        const service = await resolve(url);
+        const service = await resolve(source);
         const { thumbnail, srvc, uid } = service;
         const hash = srvc + uid;
         
@@ -17,7 +17,7 @@ export default async function handler({ url, db }: { url: URL, db: DB }) {
             thumb_file.close();
         }
 
-        await append_task(url, service, db);
+        await append_task(source, service, db);
         return JSON.stringify({ status: true });
     }
     catch (e) {

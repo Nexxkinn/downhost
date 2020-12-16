@@ -51,10 +51,9 @@ async function init() {
         // add loading
         field.disabled = true;
         submit.disabled = true;
-        const url = field.value;
-        if (!url) return;
-        const body = { url };
-        const gql = await req({ func:'add', body });
+        const source = field.value;
+        if (!source) return;
+        const gql = await req({ api:'job/add', body: { source } });
         field.value = "";
         field.disabled = false;
         submit.disabled = false;
@@ -93,15 +92,15 @@ async function init() {
 }
 
 async function refreshList() {
-    const down = await req({ func:'downlist' });
-    const lib  = await req({ func:'library' });
+    const down = await req({ api:'job/list' });
+    const lib  = await req({ api:'lib/dir' });
     liblist_update(lib);
     downlist_update(down);
     window.setTimeout(refreshList, 1000);
 }
 
-async function req({ func, body = {} }) {
-    const res = await fetch(`/api/${func}`,
+async function req({ api, body = {} }) {
+    const res = await fetch(`/api/${api}`,
         {
             method: 'POST',
             headers: {
@@ -177,6 +176,7 @@ function liblist_item(parent,args) {
     const item = document.createElement('fast-card');
 
     const thumb = document.createElement('img');
+          thumb.loading = "lazy";
           thumb.src = "/thumb/"+id;
           thumb.style = ` width:100%;`;
 
@@ -194,7 +194,7 @@ function liblist_item(parent,args) {
           rem.onclick    = async () => {
             item.style = ` pointer-events: none; opacity: 0.50;`;
 
-            const res  = await req({ func:'remove', body:{ id } });
+            const res  = await req({ api:'lib/remove', body:{ id } });
             
             if(!res.status) item.style = '';
           }

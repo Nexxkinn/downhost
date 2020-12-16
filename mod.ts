@@ -33,10 +33,11 @@ router
     .get('/',async (ctx) => {
         ctx.response.body = await index(ctx.request,db);
     })
-    .post('/api/:function',async (ctx) => {
+    .post('/api/:type/:function',async (ctx) => {
         const body = await ctx.request.body({ type: 'json' }).value;
+        const type = ctx.params.type;
         const func = ctx.params.function;
-        ctx.response.body = await api({func,body},db);
+        ctx.response.body = await api({type,func,body},db);
     })
     .get('/image/:id/:page',async (ctx) => {
         const id   = Number(ctx.params.id);

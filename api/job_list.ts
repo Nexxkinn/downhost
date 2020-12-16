@@ -1,6 +1,6 @@
 import { DB } from './_deps.ts';
 
-export default async function handler(page:Number, db: DB) {
+export default async function handler(db: DB) {
     const list = new Array();
     const res = db.query("SELECT download.id id, title, status, size, size_down FROM catalog INNER JOIN download ON catalog.hash = download.hash");
     for (const [id, title, status, size, size_down] of res) {
