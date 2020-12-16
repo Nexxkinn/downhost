@@ -53,6 +53,8 @@ USE IT WITH YOUR OWN RISK!!!
 ### Todo
 - Fancy directory listing
 - Reader client
+- Restore download list
+- Stop/Pause download list
 
 ### Special Thanks
 - [feather icons](https://github.com/feathericons/feather)

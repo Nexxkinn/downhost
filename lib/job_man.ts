@@ -6,7 +6,7 @@ import { status } from "./_deps.ts";
 const tasklist: {
     hash: string;
     srvc: string;
-    status: () => status;
+    status: status;
     start: () => Promise<void>;
     stop: (msg: string) => Promise<void>;
     cancel: (msg: string) => Promise<void>;
@@ -29,15 +29,16 @@ export async function append_task(url: URL, service: DownMeta, db: DB) {
     return true;
 }
 
-export async function set_task(id: number, act: string, db: DB) {
+export async function set_task(id: number, task: string, db: DB) {
     const [[hash]] = db.query('SELECT hash from download WHERE id=? LIMIT 1', [id]);
     if (!hash) return;
     const job = tasklist.find(x => x.hash === hash);
     if (!job) return;
-    switch (act) {
-        case 'start': if (job.status() === status.STOPPED) return job.start(); break;
+    switch (task) {
+        case 'start': if (job.status === status.STOPPED) return job.start(); break;
         case 'stop': return job.stop(`job id ${hash} has been stopped by user request.`);
         case 'cancel': return job.cancel(`job id ${hash} has been removed by user request.`);
         default: return;
     }
 }
+

@@ -147,16 +147,17 @@ function downlist_update(list) {
     // remove unlisted item
     for (const {id, update, remove} of _down){
         let isListed = false;
-        for(const { id:item_id, size_down } of list) {
+        for(const { id:item_id, status, size_down } of list) {
             if ( item_id === id ) { 
                 isListed = true;
-                update(size_down);
-                break; }
+                update(status,size_down);
+                break;
+            }
         }
         if(!isListed) { remove(); _down.splice(_down.findIndex((x) => x.id === id),1)}
     }
 
-    // update
+    // add new item
     for (const item of list) {
         let isListed = false;
         for (const child of _down) {
@@ -229,28 +230,87 @@ function liblist_item(parent,args) {
 /**
  * 
  * @param {HTMLElement} parent 
- * @param {{id:number,title:string,size:number,size_down:number}} args
+ * @param {{id:number,title:string,status:number,size:number,size_down:number}} args
  */
 function downlist_item(parent, args) {
-    const {id,title,size,size_down} = args;
+    const {id,title,size,status,size_down} = args;
 
     const item = document.createElement('fast-card');
           item.clientHeight = 0;
-          item.style = `
-          width:100%;
-          padding:10px;
-          `
+
     const prog = document.createElement('fast-progress');
+          prog.style = 'grid-area: prog;';
           prog.value = size_down ? (size_down / size) * 100 : null;
           prog.max = size;
-    const head = document.createElement('div');
-          head.append(decodeHtml(title),prog);
-    item.append(head);
+    
+    // const nav_icon_strt = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-play"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+    // const nav_icon_stop = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-octagon"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon></svg>';
+    // const nav = document.createElement('fast-button');
+    //       nav.dataset.status = status;
+    //       nav.title = 'stop downloading';
+
+    // const strt = async () => {
+    //     nav.style = ` pointer-events: none; opacity: 0.50;`;
+    //     const res = await req({ api:'job/start', body: { id } });
+    //     console.log(`start: ${id} / ${res}`);
+    // }
+    // const stop = async () => {
+    //     nav.style = ` pointer-events: none; opacity: 0.50;`;
+    //     const res = await req({ api:'job/stop', body: { id } });
+    //     console.log(`stop: ${id} / ${res}`);
+    // }
+
+    // if(status === 2) {
+    //     // start
+    //     nav.onclick = strt;
+    //     nav.innerHTML = nav_icon_strt;
+    // }
+    // else {
+    //     // stop
+    //     nav.onclick = stop;
+    //     nav.innerHTML = nav_icon_stop;
+    // }
+
+    const cancel = document.createElement('fast-button');
+          cancel.title = 'remove from the list';
+          cancel.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`
+          cancel.onclick = async () => {
+            item.style = ` pointer-events: none; opacity: 0.50;`;
+            const res = await req({ api:'job/cancel', body: { id } });
+            if(!res.status) item.style = '';
+            console.log(`cancel: ${id} / ${res}`);
+        }
+
+    const man  = document.createElement('div');
+          man.style = 'grid-area: opt;';
+          man.append(cancel);
+          // man.append(nav,cancel);
+
+    const name = document.createElement('div');
+          name.style = 'grid-area: name;';
+          name.append(decodeHtml(title));
+
+    item.append(name,man,prog);
     item.index = id;
     parent.prepend(item);
 
-    const update = (size_down) => {
+    const update = (status,size_down) => {
         prog.value = (size_down / size) * 100;
+
+        // if( nav.dataset.status !== status ){
+        //     nav.dataset.status = status;
+        //     nav.style = '';
+        //     if(status === 2) {
+        //         // start
+        //         nav.onclick = strt;
+        //         nav.innerHTML = nav_icon_strt;
+        //     }
+        //     else {
+        //         // stop
+        //         nav.onclick = stop;
+        //         nav.innerHTML = nav_icon_stop;
+        //     }
+        // }
     };
 
     const remove = () => {

@@ -102,6 +102,19 @@
             gap: 8px;
         }
 
+        .catalog-list fast-card {
+            padding:10px;
+            display:grid;
+            grid-auto-columns: auto 44px;
+            grid-template-areas: 'name opt' 'prog prog';
+        }
+
+        .catalog-list fast-button {
+            width: 32px;
+            height: 32px;
+            margin-left: 4px;
+        }
+
         .nav {
             display: flex;
         }

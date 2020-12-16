@@ -27,7 +27,7 @@ async function job({func,body}:any,db:DB) {
             return await job_add({ source: new URL(body.source), db });
         }
         case 'start': case 'stop': case 'cancel': {
-            return await job_update(body, db);
+            return await job_update(func,Number(body.id), db);
         }
         default: {
             return JSON.stringify({ status: false });

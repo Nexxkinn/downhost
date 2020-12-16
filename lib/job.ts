@@ -6,14 +6,14 @@ import { DB } from "../api/_deps.ts";
 
 export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() => void) {
     const { download, srvc, type, title, length, uid } = meta;
-    let _stat  = status.INITIALIZED;
+    let _status  = status.INITIALIZED;
     let abc    = new AbortController();
     const hash = srvc + uid;
     const file_name = gen_filename(srvc, uid, title);
 
     const start  = async () => {
-        _stat = status.RUNNING;
-        if (abc.signal.aborted) { _stat = status.STOPPED; abc = new AbortController(); }
+        _status = status.RUNNING;
+        if (abc.signal.aborted) { _status = status.STOPPED; abc = new AbortController(); }
 
         // initialize database
         db.query("INSERT OR IGNORE INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, source.href, title, length, 0])
@@ -155,27 +155,25 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
         }
 
         db.query("UPDATE catalog SET status=?,filename=? WHERE hash=? ", [3, file_name, hash]);
+        db.query("DELETE FROM download WHERE hash=?", [hash]);
         remove();
     }
 
     const stop   = async (msg:string) => {
         console.log(msg);
         abc.abort();
-        _stat = status.STOPPED;
+        _status = status.STOPPED;
         db.query("UPDATE catalog SET status=? WHERE hash=?", [2, hash]);
     }
 
     const cancel = async (msg:string) => {
         console.log(msg);
         abc.abort();
-        db.query("DELETE catalog WHERE hash=?", [hash]);
-        db.query("DELETE download WHERE hash=?", [hash]);
+        db.query("DELETE FROM catalog WHERE hash=?", [hash]);
+        db.query("DELETE FROM download WHERE hash=?", [hash]);
         remove();
     }
-
-    const stat = () => _stat;
-
-    return { hash, srvc, status:stat, start, stop, cancel }
+    return { hash, srvc, start, stop, cancel, get status(){ return _status } }
 }
 
 function gen_filename(srvc: string, uid: string, title: string) {
