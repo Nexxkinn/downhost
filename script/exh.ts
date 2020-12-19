@@ -104,10 +104,9 @@ export async function metadata(link: string): Promise<DownMeta> {
               return await alt(args);
             }
           }
-
+          const api_fetch = async (): Promise<Response> => {
           try {
-
-            const api_fetch = await fetch(token + '/api.php', {
+              return await fetch(token + '/api.php', {
               body: JSON.stringify(payload),
               method: 'POST',
               headers: {
@@ -115,7 +114,17 @@ export async function metadata(link: string): Promise<DownMeta> {
                 "cookie": cookie
               }
             })
-            const { i, i3, i6 } = await api_fetch.json();
+            }
+            catch (e) {
+              log('Remote host is probably angry, retrying in 20s...');
+              await new Promise(r => setTimeout(r, 20000));
+              return await api_fetch();
+            }
+          }
+
+          try {
+            const res = await api_fetch();
+            const { i, i3, i6 } = await res.json();
             nl = grab("nl('", "')", i6);
             const filename = grab('<div>', ' ::', i);
             const input = grab('<img id="img" src="', '" style=', i3);
