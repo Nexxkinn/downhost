@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded",init);
 
 /**
  * @typedef {Object} lib_item
+ * @property {HTMLElement} item
  * @property {number} id
  * @property {() => void} remove
  */
@@ -23,8 +24,32 @@ const _lib  = new Array();
  */
 const _down = new Array();
 
-async function init() {
+/**
+ * true:
+ *  - iOS/iPadOS
+ *  - Android
+ *  - Mobile OS
+ * false:
+ *  - Windows
+ *  - MacOS
+ *  - Linux
+ *  - Any OS
+ */
+const is_mobile = () => {
+    const isIOS = (/iPad|iPhone|iPod/.test(navigator.platform) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
+        !window.MSStream
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isMobile = /iPhone|iPad|iPod|Android|BlackBerry|Opera Mini|IEMobile|CRiOS|OPiOS|Mobile|FxiOS/i.test(navigator.userAgent);
+    return isIOS || isAndroid || isMobile;
+};
 
+const lite_mode = is_mobile();
+
+let observer,catalog_observer,rem_icon,info_icon,card,butt;
+let PAGE_SIZE=50, page=0;
+
+async function init() {
     const field    = document.getElementById('field');
     const submit   = document.getElementById('submit');
     const settings = document.getElementById('settings');
@@ -33,17 +58,46 @@ async function init() {
     const catalogTab = document.getElementById('catalogTab');
     const libraryTab = document.getElementById('libraryTab');
 
-    const catalogPanel = document.getElementById('catalogPanel');
-    const libraryPanel = document.getElementById('libraryPanel');
+    const catalogPanel = document.getElementById('downpanel');
+    const libraryPanel = document.getElementById('libpanel');
 
-    catalogPanel.hidden = false;
-    libraryPanel.hidden = true;
 
+    const parser    = new DOMParser()
+    const rem_svg   = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+    const info_svg  = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
+    rem_icon  = parser.parseFromString(rem_svg,'image/svg+xml');
+    info_icon = parser.parseFromString(info_svg,'image/svg+xml');
+
+    card = document.createElement('fast-card');
+    butt = document.createElement('fast-button');
+
+    observer = new IntersectionObserver((entries,observer) => {
+        for(const entry of entries){
+            if(!entry.isIntersecting) continue;
+            const thumb = entry.target;
+            thumb.src = thumb.dataset.src;
+            observer.unobserve(thumb);
+        }
+    }, { threshold: 0, rootMargin:'100px 0px' });
+
+    lib_observer = new IntersectionObserver((e,o) => {
+        for(const entry of e){
+            if(entry.isIntersecting){
+                page++;
+                liblist_updateElement(false);
+            }
+        }
+    },{ threshold: 1 })
+
+    catalogPanel.style.display = 'none';
+    libraryPanel.style.display = 'grid';
+    
     // This is a hotfix for shadow DOM bug occured in Warp JIT on firefox 83+
     // Remove it if it was fixed in later builds.
     // 11/11/2020 : https://github.com/microsoft/fast/pull/4087 fixes this issue.
     // 22/11/2020 : Nah, It's still broken in version 85.
-    field.shadowRoot.getElementById('control').value = "";
+    // 17/12/2020 : Might've been fixed in version 86.
+    // field.shadowRoot.getElementById('control').value = "";
 
     document.getElementById('dialog-close').onclick = () => dialog.hidden = true;
 
@@ -62,18 +116,18 @@ async function init() {
 
     catalogTab.onclick = (_) => {
         catalogTab.appearance = "accent";
-        catalogPanel.hidden = false;
+        catalogPanel.style.display = 'block';
 
         libraryTab.appearance = "stealth";
-        libraryPanel.hidden = true;
+        libraryPanel.style.display = 'none';
     }
 
     libraryTab.onclick = (_) => {
         catalogTab.appearance = "stealth";
-        catalogPanel.hidden = true;
+        catalogPanel.style.display = 'none';
 
         libraryTab.appearance = "accent";
-        libraryPanel.hidden = false;
+        libraryPanel.style.display = 'grid';
     }
 
     settings.onclick = (_) => {
@@ -83,19 +137,24 @@ async function init() {
     field.valueChanged = (_) => {
         submit.hidden = !field.value.startsWith('http');
     }
+
     await refreshList();
+
+    const liblist = document.getElementById('lib-footer');
+    lib_observer.observe(liblist);
 
     
     // dummy
-    // const table = document.getElementById('cataloglist');
+    // const table = document.getElementById('downlist');
     // downlist_item(table,{id:998,title:'title',status:1,size:100,size_down:10})
 }
 
 async function refreshList() {
     const down = await req({ api:'job/list' });
     const lib  = await req({ api:'lib/dir' });
-    liblist_update(lib);
-    downlist_update(down);
+    const lib_update = liblist_update(lib);
+    const dow_update = downlist_update(down);
+    await Promise.all([lib_update,dow_update]);
     window.setTimeout(refreshList, 1000);
 }
 
@@ -116,8 +175,7 @@ async function req({ api, body = {} }) {
  * 
  * @param {{id:number,title:string}[]} list 
  */
-
-function liblist_update(list) {
+async function liblist_update(list) {
     const table = document.getElementById('liblist');
     // remove unlisted item
     for (const {id, remove} of _lib){
@@ -129,21 +187,39 @@ function liblist_update(list) {
     }
 
     // update
+    let _need_update = false;
+    const new_item = document.createDocumentFragment();
     for (const item of list) {
         let isListed = false;
         for (const child of _lib) {
             if (child.id === item.id) { isListed = true; break; }
         }
-        if (!isListed) { _lib.unshift(liblist_item(table,item)) }
+        if (!isListed) {
+            _need_update = true;
+            _lib.unshift(liblist_item(table,item))
+        }
     }
+    if(_need_update) liblist_updateElement();
+}
+
+function liblist_updateElement(prepend=true){
+    const table = document.getElementById('liblist');
+    const items = _lib.slice(PAGE_SIZE*page,PAGE_SIZE*(page+1));
+    let list = document.createDocumentFragment();
+    for(const { item } of items) {
+        if(table.contains(item)) continue;
+        list.appendChild(item);
+    }
+    if(prepend) table.prepend(list);
+    else table.appendChild(list);
 }
 
 /**
  * 
  * @param {{id:number, title:string, status:number, size:number, size_down:number}[]} list 
  */
-function downlist_update(list) {
-    const table = document.getElementById('cataloglist');
+async function downlist_update(list) {
+    const table = document.getElementById('downlist');
     // remove unlisted item
     for (const {id, update, remove} of _down){
         let isListed = false;
@@ -172,58 +248,58 @@ function downlist_update(list) {
  * @param {HTMLElement} parent 
  * @param {{id:number, title:string}} args
  */
+const _img  = document.createElement('img');
+      _img.style = 'width:100%;';
+const _div  = document.createElement('div');
+const _link = document.createElement('a');
 function liblist_item(parent,args) {
     const { id, title } = args;
-    const item = document.createElement('fast-card');
+    const item = card.cloneNode(true);
 
-    const thumb = document.createElement('img');
-          thumb.loading = "lazy";
-          thumb.src = "/thumb/"+id;
-          thumb.style = ` width:100%;`;
+    const thumb = _img.cloneNode();
+          thumb.dataset.src = "/thumb/"+id;
+    observer.observe(thumb);
 
-    const div = document.createElement('div');
-    const link = document.createElement('a');
+    const div  = _div.cloneNode();
+    const link = _link.cloneNode();
           link.href = '/reader/'+id;
           link.append(thumb);
     div.append(link);
 
-    const rem = document.createElement('fast-button');
+    const rem = butt.cloneNode(true);
           rem.appearance = 'stealth';
-          rem.className  = 'option';
-          rem.title      = 'Remove this gallery'
-          rem.innerHTML  = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`
+          rem.className  = 'item-button';
+          rem.title      = 'Remove this gallery';
+          rem.appendChild(rem_icon.documentElement.cloneNode(true));
           rem.onclick    = async () => {
             item.style = ` pointer-events: none; opacity: 0.50;`;
-
             const res  = await req({ api:'lib/remove', body:{ id } });
-            
             if(!res.status) item.style = '';
           }
 
-    const info = document.createElement('fast-button');
+    const info = butt.cloneNode(true);
           info.appearance = 'stealth';
-          info.className  = 'option';
+          info.className  = 'item-button';
           info.title      = 'View this gallery';
-          info.innerHTML  = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`
+          info.appendChild(info_icon.documentElement.cloneNode(true));
           info.onclick    = () => window.open('/reader/'+id, '_blank');
 
-    const name = document.createElement('div');
-          name.title = decodeHtml(title);
+    const name_tn = document.createTextNode(title);
+    const name = _div.cloneNode();
+          name.title = name_tn.nodeValue;
           name.className = 'title';
           name.id = 'item-title';
-          name.append(decodeHtml(title));
+          name.appendChild(name_tn);
 
-    const content = document.createElement('div');
-          content.style = ` width:100%; grid-template-areas: 'opt opt' 'title title'; `;
+    const content = _div.cloneNode();
+          content.style = ` width:100%; grid-template-areas: 'opt opt' 'title title'; background: var(--background-color);`;
           content.append(info,rem,name);
           
     item.index = id;
     item.append(div,content);
-    parent.prepend(item);
-
     const remove = () =>{ parent.removeChild(item)};
 
-    return {id,remove};
+    return {item, id,remove};
 }
 
 
@@ -288,7 +364,7 @@ function downlist_item(parent, args) {
 
     const name = document.createElement('div');
           name.style = 'grid-area: name;';
-          name.append(decodeHtml(title));
+          name.appendChild(document.createTextNode(title));
 
     item.append(name,man,prog);
     item.index = id;
@@ -318,10 +394,4 @@ function downlist_item(parent, args) {
     }
     
     return {id,update,remove};
-}
-
-function decodeHtml(html) {
-    var txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
 }

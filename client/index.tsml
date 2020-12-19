@@ -65,17 +65,22 @@
         }
 
         .lib-list {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
             gap: 15px;
         }
 
         .lib-list fast-card {
             display: grid;
-            width: 150px;
+            /* width: 150px; */
         }
 
-        .lib-list .option {
+        .lib-list fast-card .item {
+            width: 100%;
+            grid-template-areas: "opt op" "title title";
+            background: var(--background-color);
+        }
+
+        .lib-list .item-button {
             border-radius:unset;
             grid-area: opt;
             width:50%;
@@ -85,7 +90,7 @@
             grid-area: title;
             font-weight: 500;
             font-size: 14px;
-            width: 130px;
+            width: 120px;
             text-overflow: ellipsis;
             overflow: hidden;
             padding: 10px 10px 0 10px;
@@ -95,21 +100,19 @@
             -webkit-line-clamp: 2;
         }
 
-        .catalog-list {
-            display: flex;
-            flex-direction: column;
-            flex-wrap: wrap;
-            gap: 8px;
+        .down-list {
+            display: block;
         }
 
-        .catalog-list fast-card {
+        .down-list fast-card {
             padding:10px;
+            margin-bottom: 8px;
             display:grid;
             grid-auto-columns: auto 44px;
             grid-template-areas: 'name opt' 'prog prog';
         }
 
-        .catalog-list fast-button {
+        .down-list fast-button {
             width: 32px;
             height: 32px;
             margin-left: 4px;
@@ -138,11 +141,37 @@
                 width: unset;
                 min-width: 80px;
             }
+
+            .lib-list {
+                grid-template-columns:repeat(5,1fr)
+            }
+            
+            .lib-list .title {
+                width: 130px;
+            }
+        }
+
+        @media screen and (max-width:875px) {
+            .lib-list {
+                grid-template-columns:repeat(4,1fr)
+            }
+        }
+
+        @media screen and (max-width:703px) {
+            .lib-list {
+                grid-template-columns:repeat(3,1fr)
+            }
+        }
+
+        @media screen and (max-width:545px) {
+            .lib-list {
+                grid-template-columns:repeat(2,1fr)
+            }
         }
 
         /* desktop or pointer-supported devices */
         @media (hover: hover) {
-            .lib-list .option {
+            .lib-list .item-button {
                 display: none;
             }
 
@@ -154,7 +183,7 @@
                 grid-auto-rows: 150px 100px;
             }
 
-            .lib-list fast-card:hover .option {
+            .lib-list fast-card:hover .item-button {
                 display: inline-grid;
             }
         }
@@ -183,18 +212,18 @@
             <fast-button id="submit" hidden>Download</fast-button>
         </div>
         <div id="nav" class="nav">
-            <fast-button class="nav-button" id="catalogTab" appearance="accent" >Downloads</fast-button>
-            <fast-button class="nav-button" id="libraryTab" appearance="stealth">Library</fast-button>
+            <fast-button class="nav-button" id="libraryTab" appearance="accent">Library</fast-button>
+            <fast-button class="nav-button" id="catalogTab" appearance="stealth">Downloads</fast-button>
         </div>
         <fast-divider></fast-divider>
         <div id="panel">
-            <div id="catalogPanel" hidden>
-                <div id="cataloglist" class="catalog-list" ></div>
+            <div id="downpanel" hidden>
+                <div id="downlist" class="down-list" ></div>
             </div>
-            <div id="libraryPanel" hidden>
+            <div id="libpanel" hidden>
                 <div id="liblist" class="lib-list"></div>
+                <div id="lib-footer"></div> 
             </div>
-        </div>
         </div>
         <fast-dialog id="settings-dialog" modal hidden>
             <div class="settings-dialog">
