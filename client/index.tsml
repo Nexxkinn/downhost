@@ -169,6 +169,15 @@
             }
         }
 
+        @media screen and (max-width:358px) {
+            .lib-list {
+                grid-template-columns:repeat(1,1fr)
+            }
+            .lib-list .title {
+                width: 80%;
+            }
+        }
+
         /* desktop or pointer-supported devices */
         @media (hover: hover) {
             .lib-list .item-button {
