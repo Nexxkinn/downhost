@@ -46,7 +46,11 @@ const is_mobile = () => {
 
 const lite_mode = is_mobile();
 
-let observer,catalog_observer,rem_icon,info_icon,card,butt;
+let observer,catalog_observer,rem_icon,info_icon;
+/**
+ * @type DocumentFragment
+ */
+let liblist_element;
 let PAGE_SIZE=50, page=0;
 
 async function init() {
@@ -68,9 +72,6 @@ async function init() {
     rem_icon  = parser.parseFromString(rem_svg,'image/svg+xml');
     info_icon = parser.parseFromString(info_svg,'image/svg+xml');
 
-    card = document.createElement('fast-card');
-    butt = document.createElement('fast-button');
-
     observer = new IntersectionObserver((entries,observer) => {
         for(const entry of entries){
             if(!entry.isIntersecting) continue;
@@ -88,6 +89,8 @@ async function init() {
             }
         }
     },{ threshold: 1 })
+
+    liblist_element = liblist_createElement();
 
     catalogPanel.style.display = 'none';
     libraryPanel.style.display = 'grid';
@@ -188,7 +191,6 @@ async function liblist_update(list) {
 
     // update
     let _need_update = false;
-    const new_item = document.createDocumentFragment();
     for (const item of list) {
         let isListed = false;
         for (const child of _lib) {
@@ -196,7 +198,7 @@ async function liblist_update(list) {
         }
         if (!isListed) {
             _need_update = true;
-            _lib.unshift(liblist_item(table,item))
+            _lib.unshift(liblist(table,item))
         }
     }
     if(_need_update) liblist_updateElement();
@@ -239,7 +241,7 @@ async function downlist_update(list) {
         for (const child of _down) {
             if (child.id === item.id) { isListed = true; break; }
         }
-        if (!isListed) { _down.unshift(downlist_item(table,item)) }
+        if (!isListed) { _down.unshift(downlist(table,item)) }
     }
 }
 
@@ -248,58 +250,75 @@ async function downlist_update(list) {
  * @param {HTMLElement} parent 
  * @param {{id:number, title:string}} args
  */
-const _img  = document.createElement('img');
-      _img.style = 'width:100%;';
-const _div  = document.createElement('div');
-const _link = document.createElement('a');
-function liblist_item(parent,args) {
+function liblist(parent,args) {
     const { id, title } = args;
-    const item = card.cloneNode(true);
+    const item = liblist_element.firstChild.cloneNode(true);
+    item.index = id;
 
-    const thumb = _img.cloneNode();
-          thumb.dataset.src = "/thumb/"+id;
+    const thumb = item.querySelector('img');
+    thumb.dataset.src = "/thumb/"+id;
     observer.observe(thumb);
 
-    const div  = _div.cloneNode();
-    const link = _link.cloneNode();
-          link.href = '/reader/'+id;
+    const link = item.querySelector('a');
+    link.href = '/reader/'+id;
+
+    const rem = item.querySelector('#item-remove');
+    rem.onclick    = async () => {
+        item.style = ` pointer-events: none; opacity: 0.50;`;
+        const res  = await req({ api:'lib/remove', body:{ id } });
+        if(!res.status) item.style = '';
+      }
+    
+    const info = item.querySelector('#item-info');
+    info.onclick    = () => window.open('/reader/'+id, '_blank');
+    
+    const name = item.querySelector('#item-title')
+    const name_tn = document.createTextNode(title);
+    name.title = name_tn.nodeValue;
+    name.appendChild(name_tn);
+    
+    const remove = () =>{ parent.removeChild(item) };
+
+    return {item, id,remove};
+}
+
+function liblist_createElement() {
+    const doc = document.createDocumentFragment();
+    const item = document.createElement('fast-card');
+
+    const thumb = document.createElement('img');
+    thumb.style.width = '100%';
+
+    const div  = document.createElement('div');
+    const link = document.createElement('a');
           link.append(thumb);
     div.append(link);
 
-    const rem = butt.cloneNode(true);
+    const rem = document.createElement('fast-button');
           rem.appearance = 'stealth';
           rem.className  = 'item-button';
+          rem.id         = 'item-remove';
           rem.title      = 'Remove this gallery';
           rem.appendChild(rem_icon.documentElement.cloneNode(true));
-          rem.onclick    = async () => {
-            item.style = ` pointer-events: none; opacity: 0.50;`;
-            const res  = await req({ api:'lib/remove', body:{ id } });
-            if(!res.status) item.style = '';
-          }
 
-    const info = butt.cloneNode(true);
+    const info = document.createElement('fast-button');
           info.appearance = 'stealth';
           info.className  = 'item-button';
+          info.id         = 'item-info';
           info.title      = 'View this gallery';
           info.appendChild(info_icon.documentElement.cloneNode(true));
-          info.onclick    = () => window.open('/reader/'+id, '_blank');
 
-    const name_tn = document.createTextNode(title);
-    const name = _div.cloneNode();
-          name.title = name_tn.nodeValue;
+    const name = document.createElement('div');
           name.className = 'title';
           name.id = 'item-title';
-          name.appendChild(name_tn);
 
-    const content = _div.cloneNode();
+    const content = document.createElement('div');
           content.style = ` width:100%; grid-template-areas: 'opt opt' 'title title'; background: var(--background-color);`;
           content.append(info,rem,name);
-          
-    item.index = id;
+    
     item.append(div,content);
-    const remove = () =>{ parent.removeChild(item)};
-
-    return {item, id,remove};
+    doc.appendChild(item);
+    return doc;         
 }
 
 
@@ -308,7 +327,7 @@ function liblist_item(parent,args) {
  * @param {HTMLElement} parent 
  * @param {{id:number,title:string,status:number,size:number,size_down:number}} args
  */
-function downlist_item(parent, args) {
+function downlist(parent, args) {
     const {id,title,size,status,size_down} = args;
 
     const item = document.createElement('fast-card');
