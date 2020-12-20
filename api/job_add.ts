@@ -1,5 +1,5 @@
 import { join, DB } from "./_deps.ts";
-import { append_task, config, ensureFile } from "../lib/_mod.ts";
+import { append_job, config, ensureFile } from "../lib/_mod.ts";
 import { resolve } from "../script/_mod.ts";
 
 export default async function handler({ source, db }: { source: URL, db: DB }) {
@@ -17,7 +17,7 @@ export default async function handler({ source, db }: { source: URL, db: DB }) {
             thumb_file.close();
         }
 
-        await append_task(source, service, db);
+        await append_job(source, service, db);
         return JSON.stringify({ status: true });
     }
     catch (e) {

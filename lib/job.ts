@@ -1,4 +1,4 @@
-import { en, de, config, ensureDir, ensureFile, log } from './_mod.ts';
+import { config, ensureDir, log } from './_mod.ts';
 import { join, create_zip, status } from './_deps.ts';
 import { DownMeta, DownType, PageRequest } from "../script/_deps.ts";
 import { DB } from "../api/_deps.ts";
@@ -73,7 +73,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                         // Tracker : https://github.com/denoland/deno/pull/6093
                         await new Promise(async (resolve: any, reject: any) => {
 
-                            const id = setTimeout(() => { abc.abort(); return reject('Timed out'); }, 30000);
+                            const id = setTimeout(() => { abc.abort(); return reject('Timed out'); }, 100000);
                             try {
                                 const res = await fetch(input, init);
                                 await save_file(res, filename, abc.signal);
@@ -89,7 +89,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                         return true;
                     }
                     catch (e) {
-                        if (retry <= 0 || abc.signal.aborted) {
+                        if (retry <= 0) {
                             if (alt && !is_alt) {
                                 log(`Stop downloading ${filename}, requesting alternate link...`);
                                 const new_page = await alt(page)

@@ -3,6 +3,7 @@ import { log, config, ensureDir } from './lib/_mod.ts';
 import { index, reader, thumb, image } from './route/_mod.ts';
 import { api } from './api/_mod.ts';
 import { info } from './index.ts';
+import { restore_job } from "./lib/job_man.ts";
 
 console.log(
 `#=============================#
@@ -17,11 +18,10 @@ console.log(
 #           HHH HHH           #
 #             HHH             #
 #                             #
-#===========DownHost==========#`)
+#===========DownHost==========#
+Version : ${info.version}`)
 
-console.log(`Version : ${info.version}`)
-
-log('prepare some directories');
+log('Initialize some directories...');
 await ensureDir(config.catalog_dir);
 await ensureDir(config.temp_dir);
 await ensureDir(config.temp_dir+'/thumb/')
@@ -60,6 +60,11 @@ router
         ctx.response.type = 'image/image';
     })
 
+log('Restoring download tasks...')
+const res = db.query("SELECT url FROM catalog WHERE status != 3");
+for await (const [url] of res) { restore_job(new URL(url),db) }
+
+log('Initialize Server...')
 const app = new Application();
 
     //   app.use( async (ctx,next) => {
