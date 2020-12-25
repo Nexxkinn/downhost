@@ -1,5 +1,6 @@
 .vscode
 auth.json
+config.json
 dist/
 *.zip
 *.sqlite
