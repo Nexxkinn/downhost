@@ -3,7 +3,6 @@ export { Application, Request, Router } from "https://deno.land/x/oak/mod.ts";
 export { contentType } from "https://deno.land/x/media_types/mod.ts";
 export { join } from "https://deno.land/std@0.78.0/path/mod.ts";
 export { getEntries, compress, create_zip } from "https://deno.land/x/littlezip@0.3.0/mod.ts";
-export { default as alphanumSort } from 'https://cdn.skypack.dev/alphanum-sort';
 
 export type Item = {
     id: number,

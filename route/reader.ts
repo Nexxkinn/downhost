@@ -1,5 +1,5 @@
-import { ensureFile ,render } from "../lib/_mod.ts";
-import { alphanumSort, DB } from "../deps.ts";
+import { ensureFile ,natsort,render } from "../lib/_mod.ts";
+import { DB } from "../deps.ts";
 import { join } from "./_deps.ts";
 import { getEntries } from "../api/_deps.ts";
 
@@ -30,5 +30,5 @@ async function getFilenames(path:string) {
         filenames.push(filename);
     }
     file.close();
-    return alphanumSort(filenames,undefined);
+    return filenames.sort(natsort({ insensitive: true }));
 }
