@@ -21,7 +21,7 @@
     "pass":""
 }
 
-//auth.json
+//auth.json. optional for selected sites.
 {
     "scrip_filename" :{
         "u":"username",
@@ -29,9 +29,13 @@
     }
 }
 ```
+
 ### Installation
+- clone repo
+- install deno
+- run command
 ```bash
-deno install --name downhost --allow-read --allow-write --allow-net mod.ts
+deno run --allow-read --allow-write --allow-net mod.ts
 ```
 
 ### Warning
