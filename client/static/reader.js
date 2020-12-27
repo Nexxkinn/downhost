@@ -4,12 +4,14 @@ async function init (){
     const g_size = len, g_id = g, g_list = list;
 
     let options = {
-        threshold: 0.5
+        threshold: 0
       }
 
     let observer = new IntersectionObserver((entries,observer) => {
+        
         for(const entry of entries){
             if(entry.isIntersecting){
+                console.log(entry.intersectionRatio);
                 observer.disconnect();
                 append();
             }

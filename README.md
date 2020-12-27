@@ -9,7 +9,16 @@
   <br>
 </h1>
 
-### Preparation
+### Installation
+- clone repo
+- install deno
+- prepare config and (optional) auth file.
+- run command
+```bash
+deno run --allow-read --allow-write --allow-net mod.ts
+```
+
+### Config
 ```
 // config.json
 {
@@ -21,25 +30,21 @@
     "pass":""
 }
 
-//auth.json. optional for selected sites.
+// auth.json, optional for selected sites.
+// check ./script/ for filename lists.
 {
-    "scrip_filename" :{
+    "script_filename" :{
         "u":"username",
         "p":"password"
     }
 }
 ```
 
-### Installation
-- clone repo
-- install deno
-- run command
-```bash
-deno run --allow-read --allow-write --allow-net mod.ts
-```
-
 ### Warning
 ```
+This app is under active development, and will prone
+to breaking changes. 
+
 The app is prone to  API Injection attack as the app 
 has yet to implement input sanitazion. Do not expose
 the app to public network at all cost.

@@ -1,6 +1,4 @@
 .vscode
-auth.json
-config.json
 metadata_template/
 dist/
 *.zip
