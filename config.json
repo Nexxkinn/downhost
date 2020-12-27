@@ -1,8 +1,0 @@
-{
-    "hostname":"localhost",
-    "port":8080,
-    "base_url": "",
-    "catalog_dir":"",
-    "temp_dir":"",
-    "pass":""
-}
