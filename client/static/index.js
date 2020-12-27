@@ -85,7 +85,7 @@ async function init() {
 
     lib_observer = new IntersectionObserver((e,o) => {
         for(const entry of e){
-            if(entry.isIntersecting){
+            if(entry.isIntersecting && _lib.length >= PAGE_SIZE){
                 page++;
                 liblist_updateElement(false);
             }
