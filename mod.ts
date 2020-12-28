@@ -24,7 +24,20 @@ Version : ${info.version}`)
 log('Initialize some directories...');
 await ensureDir(config.catalog_dir);
 await ensureDir(config.temp_dir);
-await ensureDir(config.temp_dir+'/thumb/')
+await ensureDir(config.temp_dir+'/thumb/');
+
+log('Checking web client directory...');
+try {
+    const stat = await Deno.stat('client/');
+    if(stat.isFile) throw new Error("path is a file.");
+}
+catch (e) {
+    if( e instanceof Deno.errors.NotFound)  { 
+        console.error("Unable to find folder 'client' for web client. Please provide it in your current directory.");
+        Deno.exit();
+    } 
+    else throw e;
+}
 
 log('Kicking up database...');
 const db = start_database();
