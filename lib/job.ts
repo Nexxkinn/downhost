@@ -32,7 +32,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                 db.query("UPDATE download SET size=?  WHERE hash=?", [size, hash]);
                 db.query("UPDATE catalog SET status=? WHERE hash=?", [1, hash]);
 
-                const file = await Deno.open(`${config.catalog_dir}/${file_name}`);
+                const file = await Deno.open(join(config.catalog_dir, file_name),{create:true,write:true});
                 let len = 0;
                 for await (const chunk of body) {
                     if (abc.signal.aborted) return;
