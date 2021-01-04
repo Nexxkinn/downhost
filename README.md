@@ -13,6 +13,7 @@
 - clone repo
 - install deno
 - prepare config and (optional) auth file.
+- prepare web client folder `client` provided in the repo under your current working directory.
 - run command
 ```bash
 deno run --allow-read --allow-write --allow-net mod.ts
