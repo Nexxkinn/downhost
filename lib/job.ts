@@ -59,9 +59,9 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                  * 1. fetch_file()
                  * 2. fetch_file() 3 tries
                  * 3. alt(old_download) -> fetch_file(new_download)
-                 *    |-> if alt() = undefined -> file is considered broken. pause the job...
+                 *    |-> if alt() = undefined -> file is considered broken. abort the job...
                  * 4. fetch_file(new_download) 3 tries
-                 * 5. file is considered broken. pause the job...  
+                 * 5. file is considered broken. abort the job...  
                  */
                 const fetch_file = async (page: PageRequest, retry = 3, is_alt = false): Promise<Boolean> => {
                     const { input, init, filename, alt } = page;
@@ -73,7 +73,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                         // Tracker : https://github.com/denoland/deno/pull/6093
                         return await new Promise<Boolean>(async (resolve: any, reject: any) => {
 
-                            const id = setTimeout(() => { abc.abort(); reject('Timed out'); }, 100000);
+                            const id = setTimeout(() => { abc.abort(); reject(new Error('Timed out')); }, 100000);
                             try {
                                 const res = await fetch(input, init); 
                                 await save_file(res, filename, abc.signal);
@@ -93,7 +93,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                                 log(`Stop downloading ${filename}, requesting alternate link...`);
                                 const new_page = await alt(page)
                                 log(`Received alternate link, downloading ${filename}...`)
-                                return await fetch_file(new_page as PageRequest, 3, true);
+                                return fetch_file(new_page as PageRequest, 3, true);
                             }
                             else {
                                 log(`${filename} is considered broken, abort the job...`);
@@ -101,8 +101,8 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                             }
                         }
                         else if (retry >= 0) {
-                            log(`Problem downloading ${filename}, retrying... (${retry})`);
-                            return await fetch_file(page, retry -= 1, is_alt);
+                            log(`Problem downloading ${filename}: ${e.message}, retrying... (${retry})`);
+                            return fetch_file(page, retry -= 1, is_alt);
                         }
                         else {
                             log(`${filename} is considered broken, abort the job...`);
@@ -121,10 +121,18 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                         c.set(b, a.length);
                         return c;
                     }
-                    for await (const chunk of body) {
-                        if (signal.aborted) return;
-                        buffer = _append(buffer, chunk)
-                    };
+                    const reader = body.getReader();
+                    signal.onabort = async () => { await reader.cancel('Timeout'); };
+                    let   stream = await reader.read();
+                    while( !stream.done && !signal.aborted ){
+                        buffer = _append(buffer, stream.value);
+                        stream = await reader.read();
+                    }
+
+                    // for await (const chunk of body) {
+                    //     if (signal.aborted) return;
+                    //     buffer = _append(buffer, chunk)
+                    // };
                     if (signal.aborted) return;
                     await zip.push(buffer, filename);
                 }
