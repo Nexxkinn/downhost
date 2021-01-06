@@ -71,6 +71,10 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                         // because Deno has yet to implement AbortController feature on fetch.
                         // TODO    : Refactor this code to use AbortController() once available.
                         // Tracker : https://github.com/denoland/deno/pull/6093
+                        
+                        // 06/01/21: We can force stop it by calling reader.cancel() when
+                        //           abort signal is called.
+                        // TODO    : Refactor it to optimise reader.cancel() in the mean time.             
                         return await new Promise<Boolean>(async (resolve: any, reject: any) => {
 
                             const id = setTimeout(() => { abc.abort(); reject(new Error('Timed out')); }, 100000);
