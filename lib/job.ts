@@ -47,6 +47,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                 if ('input' in download) throw new Error("wrong DownType.");
 
                 let page_downloaded = 0;
+                const te = new TextEncoder();
 
                 await ensureDir(`${config.temp_dir}/${hash}`);
                 const zip = await create_zip(join(config.temp_dir, hash, file_name));
@@ -66,30 +67,22 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                 const fetch_file = async (page: PageRequest, retry = 3, is_alt = false): Promise<Boolean> => {
                     const { input, init, filename, alt } = page;
                     const abc = new AbortController();
+                    const id = setTimeout(() => { abc.abort(); }, 100000);
                     try {
                         // this is our current implementation to make a timeout abort fetch
                         // because Deno has yet to implement AbortController feature on fetch.
                         // TODO    : Refactor this code to use AbortController() once available.
                         // Tracker : https://github.com/denoland/deno/pull/6093
-                        
-                        // 06/01/21: We can force stop it by calling reader.cancel() when
-                        //           abort signal is called.
-                        // TODO    : Refactor it to optimise reader.cancel() in the mean time.             
-                        return await new Promise<Boolean>(async (resolve: any, reject: any) => {
 
-                            const id = setTimeout(() => { abc.abort(); reject(new Error('Timed out')); }, 100000);
-                            try {
-                                const res = await fetch(input, init); 
-                                await save_file(res, filename, abc.signal);
-                                resolve(true);
-                            }
-                            catch (e) {
-                                reject(e.message);
-                            }
-                            finally {
-                                clearTimeout(id);
-                            }
+                        const res = fetch(input, init);
+                        const timer = new Promise<Boolean>((res) => {
+                            abc.signal.addEventListener('abort', () => res(false));
                         })
+                        const ensure_res = await Promise.race([res,timer]);
+                        if(!ensure_res) throw new Error('Timeout');
+                        await save_file(ensure_res as Response, filename, abc.signal);
+                        clearTimeout(id);
+                        return true;
                     }
                     catch (e) {
                         if (retry <= 0) {
@@ -137,7 +130,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                     //     if (signal.aborted) return;
                     //     buffer = _append(buffer, chunk)
                     // };
-                    if (signal.aborted) return;
+                    if (signal.aborted) throw new Error('Timeout');
                     await zip.push(buffer, filename);
                 }
 
