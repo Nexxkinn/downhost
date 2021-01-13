@@ -1,4 +1,4 @@
-export { join, getEntries } from "../deps.ts";
+export { join, get_entries } from "../deps.ts";
 export { 
     DB, 
     Request, DownMode,

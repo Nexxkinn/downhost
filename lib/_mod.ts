@@ -5,3 +5,5 @@ export { log } from './log.ts';
 export { config } from './config.ts';
 export { ensureFile, ensureDir } from './ensureFileDir.ts';
 export { natsort } from "./filesort.ts";
+export { getFilenames } from './getFilenames.ts';
+export { filename } from './filename.ts';

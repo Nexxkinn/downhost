@@ -1,4 +1,4 @@
-import { DownConfig, getEntries } from "./_deps.ts";
+import { DownConfig, get_entries } from "./_deps.ts";
 import { alphanumSort, DB, join } from "../deps.ts";
 import { en, config } from "./_mod.ts";
 import { resize } from "https://deno.land/x/deno_image@v0.0.3/mod.ts";
@@ -49,11 +49,11 @@ export async function dir_scan(db:DB,config:DownConfig) {
 async function parse(file:Deno.File) {
 
     const list = new Array();
-    for ( const {filename} of await getEntries(file)) list.push(filename);
+    for ( const {filename} of await get_entries(file)) list.push(filename);
     const cover_name = alphanumSort(list,undefined)[0] as string;
 
     let thumb = new Uint8Array(0);
-    for ( const { filename, extract } of await getEntries(file)) {
+    for ( const { filename, extract } of await get_entries(file)) {
         if(filename === cover_name) { 
             thumb = await extract();
             break;

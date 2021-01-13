@@ -1,4 +1,4 @@
-import { config, ensureDir, log } from './_mod.ts';
+import { config, ensureDir, log, filename } from './_mod.ts';
 import { join, create_zip, status } from './_deps.ts';
 import { DownMeta, DownType, PageRequest } from "../script/_deps.ts";
 import { DB } from "../api/_deps.ts";
@@ -9,7 +9,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
     let _status  = status.INITIALIZED;
     let abc    = new AbortController();
     const hash = srvc + uid;
-    const file_name = gen_filename(srvc, uid, title);
+    const file_name = filename(srvc, uid, title);
 
     const start  = async () => {
         _status = status.RUNNING;
@@ -147,7 +147,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                 log(JSON.stringify({ page_downloaded, length }))
 
                 log('compile gallery into compressed zip...');
-                await zip.end();
+                await zip.close();
                 await Deno.copyFile(join(config.temp_dir, hash, file_name), join(config.catalog_dir, file_name))
                 await Deno.remove(join(config.temp_dir, hash), { recursive: true });
 
@@ -178,43 +178,5 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
         remove();
     }
     return { hash, srvc, start, stop, cancel, get status(){ return _status } }
-}
-
-function gen_filename(srvc: string, uid: string, title: string) {
-    const header = `[${srvc}][${uid}]`;
-    let name = '';
-    let step = 0;
-    do {
-        switch (step) {
-            case 0: { // remove unicode escape strings
-                name = title.replace(/&(?:\#(?:(?<dec>[0-9]+)|[Xx](?<hex>[0-9A-Fa-f]+))|(?<named>[A-Za-z0-9]+));/g, '');
-                step++;
-                break;
-            }
-            case 1: { // remove second or alt title
-                name = name.split('|')[0];
-                step++;
-                break;
-            }
-            case 2: { // limit to first 180 letters only.
-                name = name.slice(0, 180);
-                step++;
-                break;
-            }
-            case 3: { // retain title only
-                name = name.replace(/[\[\{](.*?)[\}\]]/g, '');
-                step++;
-                break;
-            }
-            default: { // last chance. header only.
-                name = '';
-                break;
-            }
-        }
-    }
-    while (header.length + name.length + 4 > 200)
-    const filename = header + name.replace(/[/\\?%*:|"<>]/g, '-') + '.zip';
-    log(filename);
-    return filename;
 }
 

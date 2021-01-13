@@ -1,7 +1,6 @@
-import { ensureFile ,natsort,render } from "../lib/_mod.ts";
+import { ensureFile ,getFilenames,render } from "../lib/_mod.ts";
 import { DB } from "../deps.ts";
 import { join } from "./_deps.ts";
-import { getEntries } from "../api/_deps.ts";
 
 const title = "";
 
@@ -10,7 +9,7 @@ export default async function handler (id:number,catalog_dir:string,db:DB){
     if (!query.length) return '404: Unknown ID:'+id;
     const [[filename, title, length]] = query;
     
-    const html_title = 'Downhost : ' + title;
+    const html_title = 'Reader : ' + title;
     const exists = await ensureFile(join(catalog_dir,filename))
     
     if( exists ) {
@@ -20,15 +19,4 @@ export default async function handler (id:number,catalog_dir:string,db:DB){
     else {
         return '404 not found';
     }
-}
-
-async function getFilenames(path:string) {
-    const file = await Deno.open(path,{read:true});
-    let filenames:string[] = new Array();
-
-    for( const { filename } of await getEntries(file)) {
-        filenames.push(filename);
-    }
-    file.close();
-    return filenames.sort(natsort({ insensitive: true }));
 }
