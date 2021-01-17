@@ -56,15 +56,15 @@ USE IT WITH YOUR OWN RISK!!!
 ### Limitation
 - prone to breaking changes in database
 - no mechanism to resume paused/terminated jobs
-- most cases is still under happy path ( except download pipeline )
-- some depedencies is still waiting to be fixed:
-   - `littlezip` needs to add a feature to recover file from terminated jobs to prevent file duplications
 
 ### Todo
+- Gallery page/API
 - Fancy directory listing
+- Metadata support
 - Reader client
 - Restore download list
 - Stop/Pause download list
+- Compactibilty with other apps
 
 ### Special Thanks
 - [feather icons](https://github.com/feathericons/feather)
