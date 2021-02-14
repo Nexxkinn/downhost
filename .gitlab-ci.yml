@@ -1,0 +1,14 @@
+image: alpine:latest
+stages:
+ - gen
+
+pages:
+  stage: gen
+  script:
+    - mkdir public public/dev/
+    - cp -r api/ client/ lib/ route/ script/ public/dev/
+    - cp *.json *.ts public/dev/
+    - echo "<html><head><title>Downhost:WIP</title></head><body></body></html>" > public/index.html
+  artifacts:
+    paths:
+      - public
