@@ -16,7 +16,7 @@
 - prepare web client folder `client` provided in the repo under your current working directory.
 - run command
 ```bash
-deno run --allow-read --allow-write --allow-net mod.ts
+deno run --allow-read --allow-write --allow-net http://nexxkinn.gitlab.io/downhost/dev/mod.ts
 ```
 
 ### Config

@@ -110,7 +110,7 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
 
                 const save_file = async ({ body, status }: Response, filename: string, signal: AbortSignal) => {
                     if (!body || status !== 200) throw new Error('unable to download file');
-
+                    const reader = body.getReader();
                     let buffer = new Uint8Array(0);
                     const _append = (a: Uint8Array, b: Uint8Array) => {
                         const c = new Uint8Array(a.length + b.length);
@@ -118,12 +118,11 @@ export async function create_job(source: URL, meta: DownMeta, db: DB, remove:() 
                         c.set(b, a.length);
                         return c;
                     }
-                    const reader = body.getReader();
+
                     signal.onabort = async () => { await reader.cancel('Timeout'); };
-                    let   stream = await reader.read();
-                    while( !stream.done && !signal.aborted ){
+
+                    for(let stream = await reader.read(); !stream.done && !signal.aborted; stream = await reader.read()) {
                         buffer = _append(buffer, stream.value);
-                        stream = await reader.read();
                     }
 
                     // for await (const chunk of body) {

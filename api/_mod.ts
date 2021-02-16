@@ -4,12 +4,14 @@ import { default as job_update } from './job_update.ts';
 import { default as job_add } from "./job_add.ts";
 import { default as remove } from './remove.ts';
 import { default as library } from './library.ts';
+import { default as gallery } from './gallery.ts';
 
 export async function api({type, func, body }: any, db: DB): Promise<string | undefined> {
     try {
         switch (type) {
             case "job": return await job({func,body},db);
             case "lib": return await lib({func,body},db);
+            case "g"  : return await gallery(Number(func),db);
             default: return JSON.stringify({ status: false });
         }
     }

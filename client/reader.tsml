@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <base href="/" target="_blank">
+    <base href="{@base_url}" target="_blank">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" sizes="128x128" href="static/icon.png">
     <script type="module" src="static/fast-components.min.js"></script>
