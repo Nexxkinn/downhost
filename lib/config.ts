@@ -1,7 +1,10 @@
 
 import type { DownConfig } from './_deps.ts';
+import { ensureFile } from "./ensureFileDir.ts";
+
 async function loadConfig(): Promise<DownConfig>{
-    try {
+
+    if(await ensureFile('config.json')){
         const config:DownConfig = JSON.parse(await Deno.readTextFile('config.json'));
         if(!config.hostname) config.hostname= "localhost";
         if(!config.port) config.port= 8080;
@@ -11,9 +14,20 @@ async function loadConfig(): Promise<DownConfig>{
         if(!config.base_url) config.base_url = "/";
         return config;
     }
-    catch(e) {
-        throw new Error('downhost is unable to find config.json in your current directory. Stopping...')
+    else {
+        console.log('Warning: Unable to find config.json, using default config instead.');
+        return default_config;
     }
+}
+
+const default_config:DownConfig = {
+    hostname:'localhost',
+    port:8080,
+    temp_dir: '.temp',
+    catalog_dir:'catalog',
+    pass:"",
+    base_url:"/",
+    base_dir:"",
 }
 
 export const config = await loadConfig();

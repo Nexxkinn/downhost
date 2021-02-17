@@ -14,7 +14,7 @@ export async function metadata(link: string): Promise<DownMeta> {
     const html = await res.text();
     const title = grab('<h1 class="title">', '</h1>', html);
     const length = Number(grab(`<td class="viewcolumn">Pages</td>\n\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t`, '\t', html));
-    const thumb = grab('"og:image" content="', '"', html);
+    const thumb = html.match(/https:\/\/.+\/cover\.jpg\?filter=null/g)?.pop() || "";
 
     const thumbnail: DownRequest = { input: new URL(thumb), init: undefined }
 
