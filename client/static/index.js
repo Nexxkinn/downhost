@@ -65,7 +65,7 @@ async function init() {
     const catalogPanel = document.getElementById('downpanel');
     const libraryPanel = document.getElementById('libpanel');
 
-    const provider     = document.getElementsByTagName('fast-design-system-provider')[0];
+    const provider     = document.querySelector('fast-design-system-provider');
     const theme_switch = document.getElementById('switch-theme');
 
     const parser    = new DOMParser()
@@ -147,10 +147,14 @@ async function init() {
         if(theme_switch.checked) {
             document.documentElement.style.setProperty('--background-color', '#FFFFFF');
             provider.backgroundColor = '#FFFFFF';
+            //provider.accentBaseColor = "#FFFFFF";
+            //provider.setAttribute("background-color",'#FFFFFF')
         }
         else {
             document.documentElement.style.setProperty('--background-color', '#181818');
             provider.backgroundColor = '#181818';
+            //provider.accentBaseColor = "#181818";
+            //provider.setAttribute("background-color",'#181818')
         }
     }
 
