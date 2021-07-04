@@ -1,11 +1,12 @@
-import { de, grab, DownMeta, PageRequest, DownType, DownPagesRequest, DownRequest, log } from "./_deps.ts";
+// deno-lint-ignore-file
+import { de, grab, DownMeta, PageRequest, DownType, DownPagesRequest, DownRequest, log, DownMetaArgs } from "./_deps.ts";
 
 const token = de('klcjv4xqjv9a01snkla642xlkg9o04qj...');
 const token2 = de('klcjv4xqjv9a01qzrtc6c41rby66f1srrdf6asqzrtqa0csrbda9fsqfklnm...');
 const regex_token = de('klcjv4xqjtrp09lzbe4of1srrdf6asqzrtqf...');
 const srvc = de('rkf6v4xlk1aop...');
 
-export async function metadata(link: string): Promise<DownMeta> {
+export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
   // TODO: check hostname
   const url = new URL(link);
 
@@ -30,7 +31,7 @@ export async function metadata(link: string): Promise<DownMeta> {
   // console.log({title, gallery_size, thumb})
 
   const contain_pages = html.includes('/?p=');  // check if gallery contains pages.
-  const s_regex = new RegExp(`<div class="gdtl" style="height:[0-9]+px"><a href="${regex_token}(\\/s\\/([a-fA-F0-9]+)\\/[0-9]+\\-([0-9]+))`,'g');
+  const s_regex = new RegExp(`<a href="${regex_token}(\/s\/([a-fA-F0-9]+)\/[0-9]+\-([0-9]+))`, 'g');
   let s_pages = new Array();
   if (!contain_pages) {
     s_pages = Array.from(html.matchAll(s_regex)).map(x => { x.shift(); return x; });
@@ -41,11 +42,11 @@ export async function metadata(link: string): Promise<DownMeta> {
       const html_page = await fetch(link + `?p=` + page, { headers: { cookie } });
       const html_p_body = await html_page.text();
       const matches = Array.from(html_p_body.matchAll(s_regex));
-      const pages   = matches.map( x => { x.shift(); return x; })
+      const pages = matches.map(x => { x.shift(); return x; })
       s_pages.push(...Array.from(pages));
     }
   }
-  
+
   // get showkey
   const [s_path] = s_pages[0];
   const s_fetch = await fetch(token + s_path, { headers: { cookie } });
@@ -89,8 +90,8 @@ export async function metadata(link: string): Promise<DownMeta> {
           const alt = async function (args: PageRequest): Promise<PageRequest> {
             const { init, filename } = args;
             try {
-              const alt_fetch = await fetch(token+s_url + '?nl=' + nl, { headers: { cookie } });
-              const alt_html  = await alt_fetch.text();
+              const alt_fetch = await fetch(token + s_url + '?nl=' + nl, { headers: { cookie } });
+              const alt_html = await alt_fetch.text();
               const alt_input = grab('<img id="img" src="', '" style=', alt_html);
               return {
                 input: alt_input,
@@ -98,22 +99,22 @@ export async function metadata(link: string): Promise<DownMeta> {
                 filename
               }
             }
-            catch(e) {
+            catch (e) {
               log('Remote host is probably angry, Retrying in 10s...');
               await new Promise(r => setTimeout(r, 10000));
               return await alt(args);
             }
           }
           const api_fetch = async (): Promise<Response> => {
-          try {
+            try {
               return await fetch(token + '/api.php', {
-              body: JSON.stringify(payload),
-              method: 'POST',
-              headers: {
-                "Content-Type": "application/json",
-                "cookie": cookie
-              }
-            })
+                body: JSON.stringify(payload),
+                method: 'POST',
+                headers: {
+                  "Content-Type": "application/json",
+                  "cookie": cookie
+                }
+              })
             }
             catch (e) {
               log('Remote host is probably angry, retrying in 20s...');

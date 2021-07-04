@@ -1,6 +1,6 @@
 // import { DB } from "../deps.ts";
-export { de,en } from '../lib/_mod.ts';
-export { log } from '../lib/_mod.ts';
+export { de,en } from '../_mod.ts';
+export { log } from '../_mod.ts';
 
 export type DownMeta = {
     /**
@@ -36,6 +36,11 @@ export type DownMeta = {
      * Unique identifier given by the service.
      */
     uid: string
+}
+
+export type DownMetaArgs = {
+    link:string,
+    start?:number
 }
 
 export type DownRequest = {

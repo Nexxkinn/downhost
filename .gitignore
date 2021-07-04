@@ -6,3 +6,4 @@ dist/
 .temp/
 catalog/
 test/
+cli/

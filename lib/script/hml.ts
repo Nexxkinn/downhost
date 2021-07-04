@@ -1,10 +1,10 @@
-import { de, grab, DownMeta, DownRequest, DownType, DownPagesRequest, PageRequest } from "./_deps.ts";
+import { de, grab, DownMeta, DownRequest, DownType, DownPagesRequest, PageRequest, DownMetaArgs } from "./_deps.ts";
 
 const token  = de("kly9v33kkg9onnv...");
 const srvc   = de("kly9v33kkg9onnv...");
 const gid_rx = /([\d]+)\.html/g;
 
-export async function metadata(link: string): Promise<DownMeta> {
+export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
     const [[,uid]]    = link.matchAll(gid_rx);
     const g_i = await get_info(uid);
 

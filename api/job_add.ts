@@ -1,23 +1,22 @@
 import { join, DB } from "./_deps.ts";
-import { append_job, config, ensureFile } from "../lib/_mod.ts";
-import { resolve } from "../script/_mod.ts";
+import { addTask, resolve, config, ensureFile } from "../lib/_mod.ts";
 
 export default async function handler({ source, db }: { source: URL, db: DB }) {
     try {
-        const service = await resolve(source);
-        const { thumbnail, srvc, uid } = service;
+        const metadata = await resolve(source);
+        const { thumbnail, srvc, uid } = metadata;
         const hash = srvc + uid;
         
         // download thumbnail
-        const thumb_path = join(config.temp_dir, 'thumb', hash);
-        if (!await ensureFile(thumb_path)) {
-            const thumb_file = await Deno.create(thumb_path);
+        const thumbPath = join(config.temp_dir, 'thumb', hash);
+        if (!await ensureFile(thumbPath)) {
+            const thumbFile = await Deno.create(thumbPath);
             const { body } = await fetch(thumbnail.input, thumbnail.init);
-            if (body) { for await (const chunk of body) { thumb_file.writeSync(chunk) } }
-            thumb_file.close();
+            if (body) { for await (const chunk of body) { thumbFile.writeSync(chunk) } }
+            thumbFile.close();
         }
 
-        await append_job(source, service, db);
+        await addTask({source,metadata, db});
         return JSON.stringify({ status: true });
     }
     catch (e) {

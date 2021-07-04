@@ -37,6 +37,6 @@ export function filename(srvc: string, uid: string, title: string) {
     name = name.replace(/[/\\%*:|"<>]/g, '-');
     name = name.replace(/\s*[\-]\s*/g,'-');
     const filename = header + name + '.zip';
-    log(JSON.stringify({filename,length:filename.length}));
+    log(JSON.stringify({filename,filename_length:filename.length}));
     return filename;
 }

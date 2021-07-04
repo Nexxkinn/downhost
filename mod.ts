@@ -1,9 +1,8 @@
 import { Application, Router, DB, contentType } from './deps.ts';
-import { log, config, ensureDir } from './lib/_mod.ts';
+import { log, config, ensureDir, rebuild } from './lib/_mod.ts';
 import { index, reader, thumb, image } from './route/_mod.ts';
 import { api } from './api/_mod.ts';
 import { info } from './index.ts';
-import { restore_job } from "./lib/job_man.ts";
 
 console.log(
 `#=============================#
@@ -75,7 +74,7 @@ router
 
 log('Restoring download tasks...')
 const res = db.query("SELECT url FROM catalog WHERE status != 3");
-for await (const [url] of res) { restore_job(new URL(url),db) }
+for await (const [url] of res) { rebuild(new URL(url),db) }
 
 log('Initialize Server...')
 const app = new Application();

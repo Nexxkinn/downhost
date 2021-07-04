@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { get_entries } from "./_deps.ts";
 import { natsort } from "./_mod.ts";
 

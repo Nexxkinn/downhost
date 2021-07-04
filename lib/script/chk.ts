@@ -1,10 +1,10 @@
-import {de, DownMeta, DownRequest, DownType} from './_deps.ts';
+import {de, DownMeta, DownMetaArgs, DownRequest, DownType} from './_deps.ts';
 
 const token  = de("klcjv4xqjv9a04xlk1aopsqxklf6ac3lh16601tz...");
 const token2 = de("klcjv4xqjv9a043ybhcoan1rbkyopcssbg9oc33hh266u1xtbg96a3slb2a9os3yklc6cnqqh2f9gn3vkh3ou9n...");
 const srvc   = de("rlf641xlh1d6fnstkkff...");
 
-export async function metadata(link:string):Promise<DownMeta> {
+export async function metadata({link}:DownMetaArgs):Promise<DownMeta> {
 
     const url = new URL(link);
     const path = url.pathname.match(/(?<=\/)\w+/g);
