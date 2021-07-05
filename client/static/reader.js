@@ -22,7 +22,7 @@ async function init (){
     const append = () => {
         if( i >= g_size ) return;
         const img = document.createElement('img');
-        img.src = '/image/'+g_id+'/'+g_list[i];
+        img.src = document.baseURI + 'image/'+g_id+'/'+g_list[i];
         img.onload = () => { img.style = 'min-height:unset;' }
         observer.observe(img);
         document.body.append(img);

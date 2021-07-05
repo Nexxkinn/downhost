@@ -179,7 +179,7 @@ async function refreshList() {
 }
 
 async function req({ api, body = {} }) {
-    const res = await fetch(`/api/${api}`,
+    const res = await fetch(`${document.baseURI}api/${api}`,
         {
             method: 'POST',
             headers: {
@@ -273,11 +273,11 @@ function liblist(parent,args) {
     item.index = id;
 
     const thumb = item.querySelector('img');
-    thumb.dataset.src = "/thumb/"+id;
+    thumb.dataset.src = document.baseURI + "thumb/" + id;
     observer.observe(thumb);
 
     const link = item.querySelector('a');
-    link.href = '/reader/'+id;
+    link.href = document.baseURI + 'reader/' + id;
 
     const rem = item.querySelector('#item-remove');
     rem.onclick    = async () => {
@@ -287,7 +287,7 @@ function liblist(parent,args) {
       }
     
     const info = item.querySelector('#item-info');
-    info.onclick    = () => window.open('/reader/'+id, '_blank');
+    info.onclick    = () => window.open( document.baseURI +'reader/'+id, '_blank');
     
     const name = item.querySelector('#item-title')
     const name_tn = document.createTextNode(title);
