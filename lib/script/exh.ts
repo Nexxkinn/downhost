@@ -50,7 +50,6 @@ export async function metadata({link,offset}:DownMetaArgs): Promise<DownMeta> {
   }
 
   // remove already downloaded pages from s_pages
-  console.log({s_pages,offset})
   s_pages.splice(0,offset);
 
   // get showkey
