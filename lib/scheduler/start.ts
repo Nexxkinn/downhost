@@ -1,13 +1,14 @@
 // deno-lint-ignore-file
 import type { DownRequest, DownPagesRequest, PageRequest } from "./_deps.ts";
-import { create_zip, join, DownType, log } from "./_deps.ts";
-import { config, ensureDir } from "../_mod.ts";
+import { create_zip, open_zip, join, DownType, log } from "./_deps.ts";
+import { config, ensureDir, ensureFile } from "../_mod.ts";
 
 type taskStartArgs = {
     type: DownType,
     hash: string,
     compiledFilename: string,
     length: number,
+    offset?: number,
     download: DownRequest | DownPagesRequest,
     signal: AbortSignal,
     setSize: (size: number) => void,
@@ -21,7 +22,7 @@ type TaskStartOutput = {
     message?:string
 }
 
-export async function Task_Start({ type, download, hash, length, compiledFilename, signal, setSize, setProgress }: taskStartArgs): Promise<TaskStartOutput> {
+export async function Task_Start({ type, download, hash, length, offset, compiledFilename, signal, setSize, setProgress }: taskStartArgs): Promise<TaskStartOutput> {
     // initialize database
     switch (type) {
         case DownType.BULK: {
@@ -48,11 +49,20 @@ export async function Task_Start({ type, download, hash, length, compiledFilenam
         case DownType.PAGES: {
             if ('input' in download) throw new Error("wrong DownType.");
 
-            let page_downloaded = 0;
+            let page_downloaded = offset ?? 0;
 
             await ensureDir(`${config.temp_dir}/${hash}`);
-            const zip = await create_zip(join(config.temp_dir, hash, compiledFilename));
-
+            const path = join(config.temp_dir, hash, compiledFilename);
+            const path_exist = await ensureFile(path);
+            const zip =  path_exist
+                ? await open_zip(path)
+                : await create_zip(path);
+            
+            const push = async (file:Uint8Array,filename:string) => {
+                if('push' in zip) await zip.push(file,filename);
+                else await zip.insert(file,filename);
+            }
+            
             setSize(length);
 
             /**
@@ -85,7 +95,8 @@ export async function Task_Start({ type, download, hash, length, compiledFilenam
 
                     clearTimeout(id);
                     if (fetchControl.signal.aborted) throw new Error('Timeout');
-                    await zip.push(buffer, filename);
+                    console.log({buff_size:buffer.byteLength})
+                    await push(buffer, filename);
                     return true;
                 }
                 catch (e) {

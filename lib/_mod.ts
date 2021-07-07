@@ -1,6 +1,6 @@
 export { render } from './render.ts';
 export { en, de } from './detox.ts';
-export { addTask, setTask, rebuild } from './scheduler/_mod.ts';
+export { addTask, setTask, restoreTask } from './scheduler/_mod.ts';
 export { resolve } from './script/_mod.ts';
 export { log } from './log.ts';
 export { config } from './config.ts';

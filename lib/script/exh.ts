@@ -1,12 +1,12 @@
 // deno-lint-ignore-file
-import { de, grab, DownMeta, PageRequest, DownType, DownPagesRequest, DownRequest, log, DownMetaArgs } from "./_deps.ts";
+import { de, grab, DownMeta, PageRequest, DownType, DownPagesRequest, DownRequest, log, DownMetaArgs, DownTag } from "./_deps.ts";
 
 const token = de('klcjv4xqjv9a01snkla642xlkg9o04qj...');
 const token2 = de('klcjv4xqjv9a01qzrtc6c41rby66f1srrdf6asqzrtqa0csrbda9fsqfklnm...');
 const regex_token = de('klcjv4xqjtrp09lzbe4of1srrdf6asqzrtqf...');
 const srvc = de('rkf6v4xlk1aop...');
 
-export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
+export async function metadata({link,offset}:DownMetaArgs): Promise<DownMeta> {
   // TODO: check hostname
   const url = new URL(link);
 
@@ -34,18 +34,24 @@ export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
   const s_regex = new RegExp(`<a href="${regex_token}(\/s\/([a-fA-F0-9]+)\/[0-9]+\-([0-9]+))`, 'g');
   let s_pages = new Array();
   if (!contain_pages) {
-    s_pages = Array.from(html.matchAll(s_regex)).map(x => { x.shift(); return x; });
+    const html_gallery = grab(`<div id="gdt">`,`<div class="gtb">`,html);
+    s_pages = Array.from(html_gallery.matchAll(s_regex)).map(x => { x.shift(); return x; });
   }
   else {
     const g_pages = getGalleryPages(html);
     for (let page = 0; page <= g_pages; page++) {
       const html_page = await fetch(link + `?p=` + page, { headers: { cookie } });
       const html_p_body = await html_page.text();
-      const matches = Array.from(html_p_body.matchAll(s_regex));
+      const html_gallery = grab(`<div id="gdt">`,`<div class="gtb">`,html_p_body);
+      const matches = Array.from(html_gallery.matchAll(s_regex));
       const pages = matches.map(x => { x.shift(); return x; })
       s_pages.push(...Array.from(pages));
     }
   }
+
+  // remove already downloaded pages from s_pages
+  console.log({s_pages,offset})
+  s_pages.splice(0,offset);
 
   // get showkey
   const [s_path] = s_pages[0];
@@ -54,6 +60,8 @@ export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
   const showkey = grab('var showkey="', '";', s_html);
 
   // pages
+
+  const tags = parseTags(html);
 
   // flowchart
   // load gallery page html
@@ -145,7 +153,7 @@ export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
     }
   };
 
-  return { type: DownType.PAGES, download, title, length, thumbnail, srvc, uid: gid }
+  return { type: DownType.PAGES, download, tags, title, length, thumbnail, srvc, uid: gid }
 }
 
 async function getCookie() {
@@ -168,6 +176,21 @@ async function getCookie() {
 
   const cookie = `ipb_member_id=${id}; ipb_pass_hash=${pass};`;
   return cookie;
+}
+
+function parseTags(html:string) {
+  //const regex = /(?<=\/tag\/)(.+?)\:(.+?)(?=\")/g
+  const regex = /(?<=\/tag\/).+?(?=\")/g
+  const parse = html.matchAll(regex);
+  let tags:DownTag[] = [];
+  if(!parse) return tags;
+  for(const res of parse) {
+    const split = String(res).replace("+"," ").split(":");
+    if (split.length == 1) split.unshift("misc");
+    const [ns,tag] = split;
+    tags.push({ns,tag});
+  }
+  return tags;
 }
 
 function getGalleryPages(html: string) {

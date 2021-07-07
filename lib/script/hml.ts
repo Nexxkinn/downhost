@@ -63,6 +63,7 @@ export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
         type:DownType.PAGES,
         srvc,
         title,
+        tags:undefined,
         length,
         uid,
         download,

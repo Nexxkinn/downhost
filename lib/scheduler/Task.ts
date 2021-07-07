@@ -9,6 +9,7 @@ import { Task_Start } from "./start.ts";
 type TaskArgs = {
     source: URL,
     metadata?: DownMeta,
+    offset?:number,
     db: DB,
     clear: () => void,
 }
@@ -22,7 +23,7 @@ export type Task = {
     cancel: (msg: string) => Promise<void>;
 }
 
-export async function Task({ source, metadata, db, clear }: TaskArgs): Promise<Task> {
+export async function Task({ source, metadata, offset, db, clear }: TaskArgs): Promise<Task> {
 
     if (!metadata) metadata = await resolve(source);
     const { download, type, srvc, length, uid, title } = metadata;
@@ -52,6 +53,7 @@ export async function Task({ source, metadata, db, clear }: TaskArgs): Promise<T
             type,
             hash,
             length,
+            offset,
             compiledFilename,
             signal: stopControl.signal,
             setSize,

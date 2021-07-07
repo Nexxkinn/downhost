@@ -20,13 +20,13 @@ const dict:{ [key: string]: string } = {
     'kly9v33kkg9onnv...':'kl66n'
 }
 
-export const service = (key:string) => srvc?.[de(dict?.[key])];
+const service = (key:string) => srvc?.[de(dict?.[key])];
 
-export async function resolve(link: URL): Promise<DownMeta> {
+export async function resolve(link: URL,offset?:number): Promise<DownMeta> {
     const hostname = en(link.hostname);
     const srvc = service(hostname);
     if (!srvc) throw new Error(`Unable to resolve: ${link.href}`);
-    const metadata: DownMeta = await srvc.metadata({link:link.href});
+    const metadata: DownMeta = await srvc.metadata({link:link.href,offset});
     // console.log(metadata);
     return metadata;
 }

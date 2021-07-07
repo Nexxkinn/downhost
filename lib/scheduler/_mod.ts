@@ -1,19 +1,15 @@
 import { Task } from "./Task.ts";
-import { DB, DownMeta, status } from "./_deps.ts";
-export { rebuild } from "./rebuild.ts";
+import type { DownMeta, DownTag } from "./_deps.ts";
+import { DB, status } from "./_deps.ts";
+export { restoreTask } from "./rebuild.ts";
 const tasklist = new Array<Task>();
 
-type addTaskNew = {
+type addTaskArgs = {
     source:URL,
+    offset?:number,
     metadata:DownMeta,
     db:DB
 }
-
-type addTaskRestore = {
-    task:Task
-}
-
-type addTaskArgs = addTaskNew | addTaskRestore;
 
 export async function addTask(args:addTaskArgs){
 
@@ -22,21 +18,23 @@ export async function addTask(args:addTaskArgs){
         tasklist.splice(tasklist.findIndex(x => x.hash === task.hash), 1);
     }
     
-    let task:Task;
-    if('task' in args ) {
-        task = args.task;
-    }
-    else {
-        task = await Task({...args, clear:remove});
-        const { source, db, metadata } = args;
-        const { length, title } = metadata;
-        const { hash } = task;
+    const task = await Task({...args, clear:remove});
+    const { source, db, metadata } = args;
+    const { length, title, tags } = metadata;
+    const { hash } = task;
 
-        // prepare the table.
-        db.query("INSERT OR IGNORE INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, source.href, title, length, 0])
-        db.query("INSERT OR IGNORE INTO download(hash) VALUES(?)", [hash]);
-        task.start(); // autostart
+    // insert tags into the table
+    for ( const {ns,tag} of tags || []) {
+        db.query(`INSERT OR IGNORE INTO tagrepo(ns, tag) VALUES(?, ?)`,[ns,tag]);
+        const [[id]] = db.query (`SELECT id from tagrepo WHERE ns=? AND tag=? LIMIT 1`,[ns,tag]);
+        db.query(`INSERT OR IGNORE INTO tag(hash, tag_id) VALUES(?, ?)`,[hash,id]);
     }
+
+    // prepare the table.
+    db.query("INSERT OR IGNORE INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, source.href, title, length, 0])
+    db.query("INSERT OR IGNORE INTO download(hash,size_down) VALUES(?,?)", [hash,args.offset ?? 0]);
+
+    task.start(); // autostart
     tasklist.push(task);
     return true;
 }

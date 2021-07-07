@@ -21,6 +21,10 @@ export type DownMeta = {
      */
     title:string,
     /**
+     * Gallery tags
+     */
+    tags:DownTag[] | undefined,
+    /**
      * Thumbnail request link
      */
     thumbnail: DownRequest,
@@ -40,7 +44,12 @@ export type DownMeta = {
 
 export type DownMetaArgs = {
     link:string,
-    start?:number
+    offset?:number
+}
+
+export type DownTag = {
+    ns:string,
+    tag:string
 }
 
 export type DownRequest = {

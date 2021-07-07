@@ -49,7 +49,7 @@ export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
             }
         }
     }
-    return { type:DownType.PAGES, uid, srvc, title:title.english, thumbnail, length, download}
+    return { type:DownType.PAGES, uid, srvc, title:title.english, tags:undefined, thumbnail, length, download}
 }
 
 

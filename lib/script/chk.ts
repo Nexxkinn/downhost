@@ -36,6 +36,7 @@ export async function metadata({link}:DownMetaArgs):Promise<DownMeta> {
         srvc,
         uid,
         title,
+        tags:undefined,
         length,
         download,
         thumbnail

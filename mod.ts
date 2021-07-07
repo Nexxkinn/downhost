@@ -1,5 +1,5 @@
 import { Application, Router, DB, contentType } from './deps.ts';
-import { log, config, ensureDir, rebuild } from './lib/_mod.ts';
+import { log, config, ensureDir, restoreTask } from './lib/_mod.ts';
 import { index, reader, thumb, image } from './route/_mod.ts';
 import { api } from './api/_mod.ts';
 import { info } from './index.ts';
@@ -73,8 +73,8 @@ router
     })
 
 log('Restoring download tasks...')
-const res = db.query("SELECT url FROM catalog WHERE status != 3");
-for await (const [url] of res) { rebuild(new URL(url),db) }
+const res = db.query("SELECT hash FROM catalog WHERE status != 3");
+for await (const [hash] of res) { restoreTask(hash,db) }
 
 log('Initialize Server...')
 const app = new Application();
@@ -94,31 +94,38 @@ await app.listen( {hostname:config.hostname,port:config.port} )
 // start server
 
 function start_database() {
-    const  db = new DB('db.sqlite');
-           db.query(`CREATE TABLE IF NOT EXISTS 
-               catalog (
-                   id INTEGER PRIMARY KEY AUTOINCREMENT,
-                   hash TEXT NOT NULL UNIQUE,
-                   length INTERGER,
-                   filename TEXT,
-                   url TEXT,
-                   title TEXT,
-                   status INTERGER
-                   )`);
-           db.query(`CREATE TABLE IF NOT EXISTS
-               download (
-                   id INTEGER PRIMARY KEY AUTOINCREMENT,
-                   hash TEXT NOT NULL UNIQUE,
-                   size INTERGER,
-                   size_down INTERGER
-               )`);
-        //    db.query(`CREATE TABLE IF NOT EXISTS
-        //         tag (
-        //             id INTEGER PRIMARY KEY AUTOINCREMENT,
-        //             hash TEXT NOT NULL UNIQUE,
-        //             key TEXT NOT NULL,
-        //             val TEXT NOT NULL,
-        //             z_index INTERGER  
-        //         )`)
+    const   db = new DB('db.sqlite');
+            db.query(`CREATE TABLE IF NOT EXISTS 
+                catalog (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    hash TEXT NOT NULL UNIQUE,
+                    length INTERGER,
+                    filename TEXT,
+                    url TEXT,
+                    title TEXT,
+                    status INTERGER
+                )`);
+            db.query(`CREATE TABLE IF NOT EXISTS
+                download (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    hash TEXT NOT NULL UNIQUE,
+                    size INTERGER,
+                    size_down INTERGER
+                )`);
+            db.query(`CREATE TABLE IF NOT EXISTS
+                tag (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    hash TEXT NOT NULL,
+                    tag_id INTERGER NOT NULL,
+                    UNIQUE(hash, tag_id)
+                )`)
+
+            db.query(`CREATE TABLE IF NOT EXISTS
+                tagrepo (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ns TEXT NOT NULL,
+                    tag TEXT NOT NULL,
+                    UNIQUE(ns, tag)
+                )`)
     return db;
 }
