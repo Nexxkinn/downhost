@@ -95,7 +95,6 @@ export async function Task_Start({ type, download, hash, length, offset, compile
 
                     clearTimeout(id);
                     if (fetchControl.signal.aborted) throw new Error('Timeout');
-                    console.log({buff_size:buffer.byteLength})
                     await push(buffer, filename);
                     return true;
                 }
