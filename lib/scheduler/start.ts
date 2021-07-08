@@ -80,7 +80,7 @@ export async function Task_Start({ type, download, hash, length, offset, compile
                 signal.addEventListener("abort", () => fetchControl.abort());
                 const id = setTimeout(() => { fetchControl.abort(); }, 100000);
                 try {
-                    const { body } = await fetch(input, { signal: fetchControl.signal });
+                    const { body } = await fetch(input,{...init, signal: fetchControl.signal });
                     if (!body) throw new Error('unable to download file');
 
                     let buffer = new Uint8Array(0);
