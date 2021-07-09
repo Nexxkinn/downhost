@@ -10,6 +10,8 @@ export default async function handler({ id, db }: { id:number, db: DB }){
 
         db.query("DELETE FROM catalog WHERE hash=?", [hash]);
         db.query("DELETE FROM download WHERE hash=?",[hash]);
+        db.query("DELETE FROM tag WHERE hash=?",[hash]);
+        
         return JSON.stringify({ status:true });
     }
     catch(e) {
