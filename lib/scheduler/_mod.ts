@@ -20,15 +20,23 @@ export async function addTask(args:addTaskArgs){
     
     const task = await Task({...args, clear:remove});
     const { source, db, metadata } = args;
-    const { length, title, tags } = metadata;
+    const { srvc, length, title } = metadata;
     const { hash } = task;
+ 
+    let tags:DownTag[] = metadata.tags ?? [];
+    // add "source" tag
+    tags.filter((x) => x.ns.toLowerCase() !== "source");
+    tags.push({ns:"source",tag:srvc});
 
     // insert tags into the table
-    for ( const {ns,tag} of tags || []) {
+    for ( const {ns,tag} of tags) {
         db.query(`INSERT OR IGNORE INTO tagrepo(ns, tag) VALUES(?, ?)`,[ns,tag]);
         const [[id]] = db.query (`SELECT id from tagrepo WHERE ns=? AND tag=? LIMIT 1`,[ns,tag]);
         db.query(`INSERT OR IGNORE INTO tag(hash, tag_id) VALUES(?, ?)`,[hash,id]);
     }
+
+    // add "source" tag
+    db.query(`INSERT OR IGNORE INTO tagrepo(ns, tag) VALUES(?, ?)`,["source",srvc]);
 
     // prepare the table.
     db.query("INSERT OR IGNORE INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, source.href, title, length, 0])
