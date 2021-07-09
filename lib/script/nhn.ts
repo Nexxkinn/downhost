@@ -1,10 +1,10 @@
-import { de, grab, DownMeta, DownRequest, DownType, DownPagesRequest, PageRequest, DownMetaArgs } from "./_deps.ts";
+import { de, grab, DownMeta, DownRequest, DownType, DownPagesRequest, PageRequest, DownMetaArgs, DownTag } from "./_deps.ts";
 
 const token   = de("klcjv4xqjv9a0ctrk1you3qybhya43qhrf96rnsbkda9gcshrb...");
 const t_token = de("klcjv4xqjv9a02lrk1you3qybhya43qhrf96rnsbkda9gcshrb...");
 const srvc    = de("k1you3qybhyf...");
 
-export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
+export async function metadata({link, offset}:DownMetaArgs): Promise<DownMeta> {
     const url = new URL(link);
     const g_fetch = await fetch(url);
     const g_html = await g_fetch.text();
@@ -13,7 +13,12 @@ export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
     const g_json = JSON.parse(g_data);
 
     const { title, id:uid, media_id, images, num_pages: length } = g_json;
-    const {pages, cover} = images;
+    const { pages, cover } : { pages:any[], cover:any } = images;
+    const tags = parseTags(g_json.tags);
+
+    // remove already downloaded pages from s_pages
+    if(offset && offset < length && offset < pages.length) pages.splice(0,offset)
+
     const thumbnail:DownRequest = {
         input: `${t_token}/${media_id}/thumb.${cover.t === 'j' ? 'jpg' : 'png'}`,
         init:undefined
@@ -49,8 +54,14 @@ export async function metadata({link}:DownMetaArgs): Promise<DownMeta> {
             }
         }
     }
-    return { type:DownType.PAGES, uid, srvc, title:title.english, tags:undefined, thumbnail, length, download}
+    return { type:DownType.PAGES, uid, srvc, title:title.english, tags, thumbnail, length, download}
 }
 
-
-
+function parseTags(tags:any):DownTag[] {
+    const res:DownTag[] = [];
+    for(const tag of tags) {
+        const {type,name} = tag;
+        res.push({ns:type,tag:name});
+    }
+    return res;
+}

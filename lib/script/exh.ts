@@ -50,7 +50,7 @@ export async function metadata({link,offset}:DownMetaArgs): Promise<DownMeta> {
   }
 
   // remove already downloaded pages from s_pages
-  s_pages.splice(0,offset);
+  if(offset && offset < length && offset < s_pages.length) s_pages.splice(0,offset);
 
   // get showkey
   const [s_path] = s_pages[0];
