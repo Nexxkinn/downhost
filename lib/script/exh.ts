@@ -4,7 +4,7 @@ import { de, grab, DownMeta, PageRequest, DownType, DownPagesRequest, DownReques
 const token = de('klcjv4xqjv9a01snkla642xlkg9o04qj...');
 const token2 = de('klcjv4xqjv9a01qzrtc6c41rby66f1srrdf6asqzrtqa0csrbda9fsqfklnm...');
 const regex_token = de('klcjv4xqjtrp09lzbe4of1srrdf6asqzrtqf...');
-const srvc = de('rkf6v4xlk1aop...');
+const srvc = de('be4of1srrdf6a...');
 
 export async function metadata({link,offset}:DownMetaArgs): Promise<DownMeta> {
   // TODO: check hostname
