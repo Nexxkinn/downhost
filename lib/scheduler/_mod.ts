@@ -54,8 +54,8 @@ export async function setTask(id: number, task: string, db: DB) {
     if (!job) return;
     switch (task) {
         case 'start': if (job.status === status.STOPPED) return job.start(); break;
-        case 'stop': return job.stop(`job id ${hash} has been stopped by user request.`);
-        case 'cancel': return job.cancel(`job id ${hash} has been removed by user request.`);
+        case 'stop': return job.stop(`job id ${id} has been stopped by user request.`);
+        case 'cancel': return job.cancel(`job id ${id} has been removed by user request.`);
         default: return;
     }
 }

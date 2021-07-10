@@ -51,8 +51,8 @@ export async function Task_Start({ type, download, hash, length, offset, compile
 
             let page_downloaded = offset ?? 0;
 
-            await ensureDir(`${config.temp_dir}/${hash}`);
-            const path = join(config.temp_dir, hash, compiledFilename);
+            await ensureDir(`${config.temp_dir}`);
+            const path = join(config.temp_dir, compiledFilename);
             const path_exist = await ensureFile(path);
             const zip =  path_exist
                 ? await open_zip(path)
@@ -137,8 +137,8 @@ export async function Task_Start({ type, download, hash, length, offset, compile
 
             log('compile gallery into compressed zip...');
             await zip.close();
-            await Deno.copyFile(join(config.temp_dir, hash, compiledFilename), join(config.catalog_dir, compiledFilename))
-            await Deno.remove(join(config.temp_dir, hash), { recursive: true });
+            await Deno.copyFile(join(config.temp_dir, compiledFilename), join(config.catalog_dir, compiledFilename))
+            await Deno.remove(join(config.temp_dir, compiledFilename));
 
             log(`done: ${join(config.catalog_dir, compiledFilename)}`);
 

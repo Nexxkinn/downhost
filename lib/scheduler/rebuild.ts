@@ -3,7 +3,7 @@ import { addTask, log, resolve } from "../_mod.ts";
 
 export async function restoreTask( hash:string, db:DB ){
 
-    let   [[offset]]  = db.query("SELECT size_down FROM download WHERE hash=? LIMIT 1", [hash]);
+    let   [[id,offset]]  = db.query("SELECT id, size_down FROM download WHERE hash=? LIMIT 1", [hash]);
     let   [[source]] = db.query("SELECT url FROM catalog where hash=? LIMIT 1", [hash]);
     
             source = new URL(source);
@@ -17,6 +17,6 @@ export async function restoreTask( hash:string, db:DB ){
 
     const status = await addTask({source,metadata,offset,db});
 
-    log(`task ${hash} has successfully been restored.`)
+    log(`task ${id} has successfully been restored.`)
     return status;
 }
