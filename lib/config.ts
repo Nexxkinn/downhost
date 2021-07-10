@@ -12,6 +12,7 @@ async function loadConfig(): Promise<DownConfig>{
         if(!config.catalog_dir) config.catalog_dir= "catalog";
         if(!config.pass) config.pass = "";
         if(!config.base_url) config.base_url = "/";
+        if(!config.webui_dir) config.webui_dir = "";
         return config;
     }
     else {
@@ -25,6 +26,7 @@ const default_config:DownConfig = {
     port:8080,
     temp_dir: '.temp',
     catalog_dir:'catalog',
+    webui_dir:"",
     pass:"",
     base_url:"/",
     base_dir:"",

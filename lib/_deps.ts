@@ -1,4 +1,4 @@
-export { join, create_zip, get_entries, open_zip } from "../deps.ts";
+export { join, create_zip, get_entries, open_zip, base64Decode } from "../deps.ts";
 
 export type DownConfig = {
     hostname:string,
@@ -6,6 +6,7 @@ export type DownConfig = {
     base_url:string,
     base_dir:string,
     catalog_dir:string,
+    webui_dir:string,
     temp_dir:string,
     pass:string
 }

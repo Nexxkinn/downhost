@@ -1,12 +1,13 @@
-image: alpine:latest
+image: denoland/deno:alpine
 stages:
  - gen
 
 pages:
   stage: gen
   script:
+    - deno run --allow-read --allow-write .gitlab/client_compile.ts
     - mkdir public public/dev/
-    - cp -r api/ client/ lib/ route/ public/dev/
+    - cp -r api/ lib/ route/ public/dev/
     - cp *.json *.ts public/dev/
     - echo "<html><head><title>Downhost:WIP</title></head><body></body></html>" > public/index.html
   artifacts:

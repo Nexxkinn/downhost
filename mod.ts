@@ -1,5 +1,5 @@
 import { Application, Router, DB, contentType } from './deps.ts';
-import { log, config, ensureDir, restoreTask } from './lib/_mod.ts';
+import { log, config, ensureDir, restoreTask, getWebUI } from './lib/_mod.ts';
 import { index, reader, thumb, image } from './route/_mod.ts';
 import { api } from './api/_mod.ts';
 import { info } from './index.ts';
@@ -25,15 +25,15 @@ await ensureDir(config.catalog_dir);
 await ensureDir(config.temp_dir);
 await ensureDir(config.temp_dir+'/thumb/');
 
-log('Checking web client directory...');
+log('Checking WebUI directory...');
 try {
-    const stat = await Deno.stat('client/');
+    const stat = await Deno.stat(config.webui_dir);
     if(stat.isFile) throw new Error("path is a file.");
 }
 catch (e) {
     if( e instanceof Deno.errors.NotFound)  { 
-        console.error("Unable to find folder 'client' for web client. Please provide it in your current directory.");
-        Deno.exit();
+        console.error(`Unable to find custom WebUI folder \"${config.webui_dir}\". Using built-in one instead.`);
+        config.webui_dir = "";
     } 
     else throw e;
 }
@@ -61,7 +61,7 @@ router
         }
     })
     .get('/static/:file', async (ctx) => {
-        ctx.response.body = await Deno.readFile(`client/static/${ctx.params.file}`);
+        ctx.response.body = getWebUI(`static/${ctx.params.file}`);
         ctx.response.type = contentType(ctx.params.file || '');
     })
     .get('/reader/:id', async (ctx) => {

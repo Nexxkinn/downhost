@@ -1,4 +1,4 @@
-export { render } from './render.ts';
+export { render, getWebUI } from './render.ts';
 export { en, de } from './detox.ts';
 export { addTask, setTask, restoreTask } from './scheduler/_mod.ts';
 export { resolve } from './script/_mod.ts';
@@ -8,3 +8,4 @@ export { ensureFile, ensureDir } from './ensureFileDir.ts';
 export { natsort } from "./filesort.ts";
 export { getFilenames } from './getFilenames.ts';
 export { filename } from './filename.ts';
+

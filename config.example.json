@@ -3,6 +3,7 @@
     "port":8080,
     "base_url": "",
     "catalog_dir":"",
+    "webui_dir":"",
     "temp_dir":"",
     "pass":""
 }
