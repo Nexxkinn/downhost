@@ -14,7 +14,7 @@ export default async function handler (id:number,catalog_dir:string,db:DB){
     
     if( exists ) {
         const list = await getFilenames(join(catalog_dir,filename));
-        return await render("client/reader.tsml",{title:html_title,length,id,list:JSON.stringify(list)})
+        return await render("reader.tsml",{title:html_title,length,id,list:JSON.stringify(list)})
     }
     else {
         return '404 not found';
