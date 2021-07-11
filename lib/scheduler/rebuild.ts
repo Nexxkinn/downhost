@@ -2,8 +2,16 @@ import { DB, DownType } from "./_deps.ts";
 import { addTask, log, resolve } from "../_mod.ts";
 
 export async function restoreTask( hash:string, db:DB ){
-
-    let   [[id,offset]]  = db.query("SELECT id, size_down FROM download WHERE hash=? LIMIT 1", [hash]);
+    
+    let   [downloadTask]  = db.query("SELECT id, size_down FROM download WHERE hash=? LIMIT 1", [hash]);
+    if( !downloadTask ) {
+        db.query("DELETE FROM catalog WHERE hash=?", [hash]);
+        db.query("DELETE FROM download WHERE hash=?",[hash]);
+        db.query("DELETE FROM tag WHERE hash=?",[hash]);
+        log(`A task can't be restored, please try re-add it again.`)
+        return false;
+    }
+    const [id,offset] = downloadTask;
     let   [[source]] = db.query("SELECT url FROM catalog where hash=? LIMIT 1", [hash]);
     
             source = new URL(source);

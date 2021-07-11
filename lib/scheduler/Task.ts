@@ -36,9 +36,6 @@ export async function Task({ source, metadata, offset, db, clear }: TaskArgs): P
         _status = status.RUNNING;
         if (stopControl.signal.aborted) { _status = status.STOPPED; stopControl = new AbortController(); }
 
-        // TODO: resume task
-        db.query('UPDATE download SET size=?,size_down=?  WHERE hash=?', [0, 0, hash]);
-
         const setSize = (size: number) => {
             db.query("UPDATE download SET size=?  WHERE hash=?", [size, hash]);
             db.query("UPDATE catalog SET status=? WHERE hash=?", [1, hash]);

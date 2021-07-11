@@ -40,7 +40,7 @@ export async function addTask(args:addTaskArgs){
 
     // prepare the table.
     db.query("INSERT OR IGNORE INTO catalog(hash,url,title,length,status) VALUES(?,?,?,?,?)", [hash, source.href, title, length, 0])
-    db.query("INSERT OR IGNORE INTO download(hash,size_down) VALUES(?,?)", [hash,args.offset ?? 0]);
+    db.query("INSERT OR IGNORE INTO download(hash) VALUES(?)", [hash]);
 
     task.start(); // autostart
     tasklist.push(task);
