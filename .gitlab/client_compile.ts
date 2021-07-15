@@ -1,4 +1,4 @@
-import { join } from "https://deno.land/std@0.99.0/path/mod.ts";
+import { join } from "https://deno.land/std@0.101.0/path/mod.ts";
 import { encode } from "https://deno.land/std/encoding/base64.ts";
 
 async function scanClientDir() {

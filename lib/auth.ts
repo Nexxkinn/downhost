@@ -1,4 +1,4 @@
-import { Context, b64Enc } from "../deps.ts";
+import { Context, b64Enc, urljoin } from "../deps.ts";
 import { config } from "./_mod.ts";
 
 type session = {
@@ -10,6 +10,7 @@ const _sessionlist:session[] = [];
 
 export async function AuthMiddleware(ctx:Context,next: ()=> Promise<unknown>) {
     if(!config.pass) return await next();
+    const loginurl = config.base_url ? urljoin(config.base_url,'login') : "/login"
     const pathname = ctx.request.url.pathname;
     const auth = ctx.cookies.get("Token");
 
@@ -25,9 +26,9 @@ export async function AuthMiddleware(ctx:Context,next: ()=> Promise<unknown>) {
         return await next();
     }
     else {
-        if (!auth) return ctx.response.redirect("/login");
+        if (!auth) return ctx.response.redirect(loginurl);
         const status = check(auth);
-        if(!status) return ctx.response.redirect("/login");   
+        if(!status) return ctx.response.redirect(loginurl);   
         return await next();
     }
 }

@@ -7,8 +7,8 @@
     <title>{@title}</title>
     <link rel="icon" type="image/png" sizes="128x128" href="static/icon.png">
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <script type="module" src='/static/fast-components.min.js'></script>
-    <script src='/static/login.js'></script>
+    <script type="module" src='static/fast-components.min.js'></script>
+    <script src='static/login.js'></script>
     <style>
         :root {
             --background-color: #181818;
