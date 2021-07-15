@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <base href="{@base_url}" target="_blank">
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>{@title}</title>
+    <link rel="icon" type="image/png" sizes="128x128" href="static/icon.png">
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script type="module" src='/static/fast-components.min.js'></script>
+    <script src='/static/login.js'></script>
+    <style>
+        :root {
+            --background-color: #181818;
+            --navbar-height: 94px;
+            --section-height-spacing: 100px 0px;
+            --section-height-spacing-mobile: 50px 0px;
+        }
+        html {
+            margin: 0 auto;
+        }
+        body {
+            margin:0;
+        }
+        html,
+        body {
+            background-color: var(--background-color);
+            font-family: SegoeUIVF, Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif;
+            max-width: 842px;
+            height: 100%;
+        }
+        .provider {
+            height: 100%;
+            display: flex;
+        }
+        .panel {
+            padding: 1em;
+            width: 300px;
+            margin: 0 auto;
+            align-self: flex-end;
+        }
+        .form {
+            display: flex;
+        }
+        .form > fast-button {
+            margin-left: 1em;
+            width: 96px;
+        }
+        .form > fast-text-field {
+            width: 100%;
+        }
+        .msg {
+            margin-top: 12px;
+            border-radius: 3px;
+            background-color: #DA1A5F;
+            padding: 10px;
+        }
+        @media only screen and (min-width: 600px) {
+            .panel {
+                align-self: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <fast-design-system-provider class="provider" use-defaults>
+        <div class="panel">
+            <div class="form">
+                <fast-text-field id="pass" appearance="outline" placeholder="password" type="password"></fast-text-field>
+                <fast-button id="login">Login</fast-button>
+            </div>
+            <div class="msg" id="msg" hidden></div>
+        </div>
+    </fast-design-system-provider>
+</body>
+</html>

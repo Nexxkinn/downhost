@@ -14,7 +14,7 @@ async function scanClientDir() {
         }
 
     }
-    Deno.chdir('client')
+    Deno.chdir('webui')
     await scan('./');
     Deno.chdir('../');
     

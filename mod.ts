@@ -1,8 +1,6 @@
-import { Application, Router, DB, contentType } from './deps.ts';
-import { log, config, ensureDir, restoreTask, getWebUI } from './lib/_mod.ts';
-import { index, reader, thumb, image } from './route/_mod.ts';
-import { api } from './api/_mod.ts';
+import { AppInit, log, config, ensureDir, restoreTask } from './lib/_mod.ts';
 import { info } from './index.ts';
+import { DB } from './deps.ts';
 
 console.log(
 `#=============================#
@@ -40,56 +38,13 @@ catch (e) {
 
 log('Kicking up database...');
 const db = start_database();
-const router = new Router();
-router
-    .get('/',async (ctx) => {
-        ctx.response.body = await index(ctx.request,db);
-    })
-    .post('/api/:type/:function',async (ctx) => {
-        const body = await ctx.request.body({ type: 'json' }).value;
-        const type = ctx.params.type;
-        const func = ctx.params.function;
-        ctx.response.body = await api({type,func,body},db);
-    })
-    .get('/image/:id/:page',async (ctx) => {
-        const id   = Number(ctx.params.id);
-        const page = ctx.params.page;
-        if( id > 0 && page ) {
-            const res  = await image(id,page,config.catalog_dir,db);
-            ctx.response.body = res?.buff;
-            ctx.response.type = res?.type;
-        }
-    })
-    .get('/static/:file', async (ctx) => {
-        ctx.response.body = getWebUI(`static/${ctx.params.file}`);
-        ctx.response.type = contentType(ctx.params.file || '');
-    })
-    .get('/reader/:id', async (ctx) => {
-        ctx.response.body = await reader(Number(ctx.params.id),config.catalog_dir,db);
-    })
-    .get('/thumb/:id', async (ctx) => {
-        ctx.response.body =  await thumb(Number(ctx.params.id),config.temp_dir,db);
-        ctx.response.type = 'image/image';
-    })
 
 log('Restoring download tasks...')
 const res = db.query("SELECT hash FROM catalog WHERE status != 3");
 for await (const [hash] of res) { restoreTask(hash,db) }
 
-log('Initialize Server...')
-const app = new Application();
-
-    //   app.use( async (ctx,next) => {
-    //       // TODO: handle cookie authentication here.
-    //       await next();
-    //   })
-      app.use(router.routes());
-      app.use(router.allowedMethods());
-
-      app.addEventListener("listen", (ctx) => {
-          console.log(`Serving requests at ${ctx.hostname}:${ctx.port}`)
-      })
-
+log('Initialize Server...');
+const app = await AppInit(db);
 await app.listen( {hostname:config.hostname,port:config.port} )
 // start server
 

@@ -8,4 +8,6 @@ export { ensureFile, ensureDir } from './ensureFileDir.ts';
 export { natsort } from "./filesort.ts";
 export { getFilenames } from './getFilenames.ts';
 export { filename } from './filename.ts';
+export { AuthMiddleware, auth } from './auth.ts';
+export { AppInit } from './app.ts';
 

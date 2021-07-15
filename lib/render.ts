@@ -1,5 +1,5 @@
 import { config } from "../lib/config.ts";
-import { base64Decode, join } from "./_deps.ts";
+import { b64Dec, join } from "./_deps.ts";
 import { webui } from "./webui.ts";
 
 const regex = /(?<=\{\@).+(?=\})/g
@@ -15,4 +15,4 @@ export async function render(file:string,react:any){
 
 export const getWebUI = (path:string) => config.webui_dir
                 ? Deno.readFileSync(join(config.webui_dir,path)) 
-                : base64Decode(webui[path])
+                : b64Dec(webui[path])
