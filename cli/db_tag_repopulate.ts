@@ -31,9 +31,12 @@ async function fetchTagstoDB() {
     
     const query = db.query('SELECT hash,url from catalog');
 
-    let source:URL, hash:string, count=0;
+    let source:URL, hash:string, count=0, skip=0;
     for( const [local_hash,url] of query ) {
-        if(!url) continue;
+        if(!url) {
+            log(`skip ${local_hash}...(${skip+=1})`);
+            continue;
+        }
         source = new URL(url);
         hash = String(local_hash);
         log(`processing ${hash}`);
@@ -53,7 +56,7 @@ async function fetchTagstoDB() {
         log(`done...(${count+=1})`)
     }
 
-    log(`${count} items has been processed`);
+    log(`${count} items has been processed, ${skip} skipped.`);
 }
 
 await fetchTagstoDB();
