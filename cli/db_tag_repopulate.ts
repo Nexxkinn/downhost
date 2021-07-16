@@ -13,7 +13,7 @@ async function fetchTagstoDB() {
     log("MAKE SURE YOU HAVE A COPY OF YOUR DATABASE FIRST.");
     const HasRead = Deno.args.find( (v) => v === '--has-read' || '-v');
     if(!HasRead) {
-        log("Rerun this app with --has_read args at the end if you've made a backup.")
+        log("Rerun this app with --has-read args at the end if you've made a backup.")
         Deno.exit();
     }
 
