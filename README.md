@@ -5,7 +5,7 @@
   <br>
   <b>DownHost</b>
   <br>
-  <sub-title style="font-size:18px;">Gallery Scrapper & Reader</sub-title>
+  <sub-title style="font-size:18px;">Gallery archive and reader</sub-title>
   <br>
 </h1>
 
