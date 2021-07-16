@@ -184,7 +184,7 @@ function parseTags(html:string) {
   let tags:DownTag[] = [];
   if(!parse) return tags;
   for(const res of parse) {
-    const split = String(res).replace("+"," ").split(":");
+    const split = String(res).replaceAll("+"," ").split(":");
     if (split.length == 1) split.unshift("misc");
     const [ns,tag] = split;
     tags.push({ns,tag});

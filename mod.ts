@@ -25,8 +25,10 @@ await ensureDir(config.temp_dir+'/thumb/');
 
 log('Checking WebUI directory...');
 try {
-    const stat = await Deno.stat(config.webui_dir);
-    if(stat.isFile) throw new Error("path is a file.");
+    if(config.webui_dir) {
+        const stat = await Deno.stat(config.webui_dir);
+        if(stat.isFile) throw new Error("path is a file.");
+    }
 }
 catch (e) {
     if( e instanceof Deno.errors.NotFound)  { 
@@ -69,7 +71,7 @@ function start_database() {
                 )`);
             db.query(`CREATE TABLE IF NOT EXISTS
                 tag (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id INTEGER PRIMARY KEY,
                     hash TEXT NOT NULL,
                     tag_id INTERGER NOT NULL,
                     UNIQUE(hash, tag_id)
@@ -77,7 +79,7 @@ function start_database() {
 
             db.query(`CREATE TABLE IF NOT EXISTS
                 tagrepo (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id INTEGER PRIMARY KEY,
                     ns TEXT NOT NULL,
                     tag TEXT NOT NULL,
                     UNIQUE(ns, tag)

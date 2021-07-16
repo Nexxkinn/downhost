@@ -6,5 +6,4 @@ dist/
 .temp/
 catalog/
 test/
-cli/
 lib/webui.ts
