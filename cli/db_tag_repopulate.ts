@@ -11,6 +11,11 @@ async function fetchTagstoDB() {
     log("Repopulate item tags for previously download items");
     log("WARNING: THIS WILL RESET ALL TAGS AVAILABLE IN YOUR DATABASE.");
     log("MAKE SURE YOU HAVE A COPY OF YOUR DATABASE FIRST.");
+    const HasRead = Deno.args.find( (v) => v === '--has-read' || '-v');
+    if(!HasRead) {
+        log("Rerun this app with --has_read args at the end if you've made a backup.")
+        Deno.exit();
+    }
 
     try {
         await Deno.stat('db.sqlite');
@@ -28,6 +33,7 @@ async function fetchTagstoDB() {
 
     let source:URL, hash:string, count=0;
     for( const [local_hash,url] of query ) {
+        if(!url) continue;
         source = new URL(url);
         hash = String(local_hash);
         log(`processing ${hash}`);
@@ -53,24 +59,7 @@ async function fetchTagstoDB() {
 await fetchTagstoDB();
 
 function resetTagDB(db:DB) {
-    db.query('DELETE from tag');
-    db.query('DELETE from tagrepo');
-
-    db.query('DROP TABLE tag');
-    db.query('DROP TABLE tagrepo');
-    
-    db.query(`CREATE TABLE IF NOT EXISTS
-        tag (
-            id INTEGER PRIMARY KEY,
-            hash TEXT NOT NULL,
-            tag_id INTERGER NOT NULL,
-            UNIQUE(hash, tag_id)
-        )`)
-    db.query(`CREATE TABLE IF NOT EXISTS
-        tagrepo (
-            id INTEGER PRIMARY KEY,
-            ns TEXT NOT NULL,
-            tag TEXT NOT NULL,
-            UNIQUE(ns, tag)
-        )`)
+    db.query('DELETE FROM tag');
+    db.query('DELETE FROM tagrepo');
+    db.query('VACUUM');
 }
