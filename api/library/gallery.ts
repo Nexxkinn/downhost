@@ -1,5 +1,5 @@
-import { join, DB } from "./_deps.ts";
-import { config, ensureFile, getFilenames } from "../lib/_mod.ts";
+import { join, DB } from "../_deps.ts";
+import { config, ensureFile, getFilenames } from "../../lib/_mod.ts";
 
 export default async function handler(id:number, db : DB) {
     const query = Array.from(db.query('SELECT filename,length FROM catalog WHERE id=? LIMIT 1',[id]));

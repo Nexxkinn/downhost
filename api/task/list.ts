@@ -1,5 +1,5 @@
 // deno-lint-ignore-file
-import { DB } from './_deps.ts';
+import { DB } from '../_deps.ts';
 
 export default async function handler(db: DB) {
     const list = new Array();

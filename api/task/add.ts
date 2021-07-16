@@ -1,5 +1,5 @@
-import { join, DB } from "./_deps.ts";
-import { addTask, resolve, config, ensureFile } from "../lib/_mod.ts";
+import { join, DB } from "../_deps.ts";
+import { addTask, resolve, config, ensureFile } from "../../lib/_mod.ts";
 
 export default async function handler({ source, db }: { source: URL, db: DB }) {
     try {

@@ -97,13 +97,6 @@ async function init() {
     catalogPanel.style.display = 'none';
     libraryPanel.style.display = 'grid';
     
-    // This is a hotfix for shadow DOM bug occured in Warp JIT on firefox 83+
-    // Remove it if it was fixed in later builds.
-    // 11/11/2020 : https://github.com/microsoft/fast/pull/4087 fixes this issue.
-    // 22/11/2020 : Nah, It's still broken in version 85.
-    // 17/12/2020 : Might've been fixed in version 86.
-    // field.shadowRoot.getElementById('control').value = "";
-
     document.getElementById('dialog-close').onclick = () => dialog.hidden = true;
 
     submit.onclick = async (_) => {
@@ -112,7 +105,7 @@ async function init() {
         submit.disabled = true;
         const source = field.value;
         if (!source) return;
-        const gql = await req({ api:'job/add', body: { source } });
+        const gql = await req({ api:'task/add', body: { source } });
         field.value = "";
         field.disabled = false;
         submit.disabled = false;
@@ -170,8 +163,8 @@ async function init() {
 }
 
 async function refreshList() {
-    const down = await req({ api:'job/list' });
-    const lib  = await req({ api:'lib/dir' });
+    const down = await req({ api:'task/list' });
+    const lib  = await req({ api:'lib/list' });
     const lib_update = liblist_update(lib);
     const dow_update = downlist_update(down);
     await Promise.all([lib_update,dow_update]);
@@ -363,12 +356,12 @@ function downlist(parent, args) {
 
     // const strt = async () => {
     //     nav.style = ` pointer-events: none; opacity: 0.50;`;
-    //     const res = await req({ api:'job/start', body: { id } });
+    //     const res = await req({ api:'task/start', body: { id } });
     //     console.log(`start: ${id} / ${res}`);
     // }
     // const stop = async () => {
     //     nav.style = ` pointer-events: none; opacity: 0.50;`;
-    //     const res = await req({ api:'job/stop', body: { id } });
+    //     const res = await req({ api:'task/stop', body: { id } });
     //     console.log(`stop: ${id} / ${res}`);
     // }
 
@@ -388,7 +381,7 @@ function downlist(parent, args) {
           cancel.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`
           cancel.onclick = async () => {
             item.style = ` pointer-events: none; opacity: 0.50;`;
-            const res = await req({ api:'job/cancel', body: { id } });
+            const res = await req({ api:'task/cancel', body: { id } });
             if(!res.status) item.style = '';
             console.log(`cancel: ${id} / ${res}`);
         }

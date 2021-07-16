@@ -1,17 +1,12 @@
 import { DB } from './_deps.ts';
-import { default as job_list } from './job_list.ts';
-import { default as job_update } from './job_update.ts';
-import { default as job_add } from "./job_add.ts";
-import { default as remove } from './remove.ts';
-import { default as library } from './library.ts';
-import { default as gallery } from './gallery.ts';
+import { task_add, task_list, task_update } from './task/_mod.ts';
+import { lib_gallery, lib_remove, lib_list } from './library/_mod.ts';
 
 export async function api({type, func, body }: any, db: DB): Promise<string | undefined> {
     try {
         switch (type) {
-            case "job": return await job({func,body},db);
-            case "lib": return await lib({func,body},db);
-            case "g"  : return await gallery(Number(func),db);
+            case "task": return await task({func,body},db);
+            case "lib" : return await lib({func,body},db);
             default: return JSON.stringify({ status: false });
         }
     }
@@ -20,16 +15,16 @@ export async function api({type, func, body }: any, db: DB): Promise<string | un
     }
 }
 
-async function job({func,body}:any,db:DB) {
+async function task({func,body}:any,db:DB) {
     switch (func) {
         case 'list': {
-            return await job_list(db);
+            return await task_list(db);
         }
         case 'add': {
-            return await job_add({ source: new URL(body.source), db });
+            return await task_add({ source: new URL(body.source), db });
         }
         case 'start': case 'stop': case 'cancel': {
-            return await job_update(func,Number(body.id), db);
+            return await task_update(func,Number(body.id), db);
         }
         default: {
             return JSON.stringify({ status: false });
@@ -39,13 +34,16 @@ async function job({func,body}:any,db:DB) {
 
 async function lib({func,body}:any, db:DB) {
     switch(func) {
+        case "list": {
+            return await lib_list({db});
+        }
         case "remove": {
             const { id } = body;
-            return await remove({ id, db });
+            return await lib_remove({ id, db });
         }
-        case "dir": {
-            //const path = body.path;
-            return await library({ path: '', db });
+        case "g": {
+            const { id } = body;
+            return await lib_gallery(Number(id),db);
         }
         default: return JSON.stringify({ status: false });
     }

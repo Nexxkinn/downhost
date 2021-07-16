@@ -1,9 +1,8 @@
-import { DB } from "./_deps.ts";
-import { config } from "../lib/_mod.ts";
+import { DB } from "../_deps.ts";
 
 
 // deno-lint-ignore require-await
-export default async function handler({ path, db }: { path:string, db: DB }){
+export default async function handler({ db }: { db: DB }){
     // TODO: Implement directory tagging system.
     const query = db.query('SELECT id,title FROM catalog WHERE status=3');
     const list = [];

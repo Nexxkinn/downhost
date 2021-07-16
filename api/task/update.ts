@@ -1,5 +1,5 @@
-import { setTask } from "../lib/_mod.ts";
-import { DB } from './_deps.ts';
+import { setTask } from "../../lib/_mod.ts";
+import { DB } from '../_deps.ts';
 
 export default async function handler(task:string, id: number, db: DB) {
     if (task && id) {
