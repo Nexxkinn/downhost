@@ -1,4 +1,5 @@
 import { DB } from "https://deno.land/x/sqlite@v2.4.2/mod.ts";
+import { Rows } from "https://deno.land/x/sqlite@v2.4.2/src/rows.ts";
 import { resolve } from '../lib/script/_mod.ts';
 
 type DownTag = {
@@ -11,7 +12,8 @@ async function fetchTagstoDB() {
     log("Repopulate item tags for previously download items");
     log("WARNING: THIS WILL RESET ALL TAGS AVAILABLE IN YOUR DATABASE.");
     log("MAKE SURE YOU HAVE A COPY OF YOUR DATABASE FIRST.");
-    const HasRead = Deno.args.find((v) => v === '--has-read' || '-v');
+    const HasRead = Deno.args.find((v) => v === '--has-read');
+    const IsRetry = Deno.args.find((v) => v === '--retry');
     if (!HasRead) {
         log("Rerun this app with --has-read args at the end if you've made a backup.")
         Deno.exit();
@@ -27,9 +29,14 @@ async function fetchTagstoDB() {
     }
 
     const db = new DB('db.sqlite');
-    resetTagDB(db);
-
-    const query = db.query('SELECT hash,url from catalog');
+    let query:Rows;
+    if(IsRetry) {
+        query = db.query('SELECT hash,url FROM catalog WHERE hash NOT IN (SELECT hash FROM tag)');
+    }
+    else {
+        resetTagDB(db);
+        query = db.query('SELECT hash,url from catalog');
+    }
 
     let source: URL, hash: string, count = 0, skip = 0;
     for (const [local_hash, url] of query) {
@@ -37,6 +44,7 @@ async function fetchTagstoDB() {
             log(`skip ${local_hash}...(${skip += 1})`);
             continue;
         }
+        console.log({hash:local_hash,url});
         source = new URL(url);
         hash = String(local_hash);
         log(`processing ${hash}`);
@@ -49,7 +57,8 @@ async function fetchTagstoDB() {
             tags.push({ ns: "source", tag: srvc });
 
             // insert tags into the table
-            for (const { ns, tag } of tags) {
+            for (let { ns, tag } of tags) {
+                tag = tag.replaceAll(" ","_"); // ensure no spaces on tag value.
                 db.query(`INSERT OR IGNORE INTO tagrepo(ns, tag) VALUES(?, ?)`, [ns, tag]);
                 const [[id]] = db.query(`SELECT id from tagrepo WHERE ns=? AND tag=? LIMIT 1`, [ns, tag]);
                 db.query(`INSERT OR IGNORE INTO tag(hash, tag_id) VALUES(?, ?)`, [hash, id]);
@@ -58,7 +67,7 @@ async function fetchTagstoDB() {
             log(`done...(${count += 1})`)
         }
         catch (e) {
-            log(`error: ${e.message}. skipping...(${skip += 1})`)
+            log(`error: ${e.message}. skipping...(${skip += 1})`);
         }
     }
 
