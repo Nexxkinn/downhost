@@ -6,9 +6,10 @@ pages:
   stage: gen
   script:
     - deno run --allow-read --allow-write .gitlab/client_compile.ts
-    - mkdir public public/dev/
-    - cp -r api/ cli/ lib/ route/ public/dev/
-    - cp *.json *.ts public/dev/
+    - mkdir public "public/$CI_COMMIT_SHORT_SHA/"
+    - cp -r api/ cli/ lib/ route/ "public/$CI_COMMIT_SHORT_SHA/"
+    - cp *.json *.ts "public/$CI_COMMIT_SHORT_SHA/"
+    - echo "/downhost/dev/mod.ts /downhost/$CI_COMMIT_SHORT_SHA/mod.ts 302" > public/_redirects
     - echo "<html><head><title>Downhost:WIP</title></head><body></body></html>" > public/index.html
   artifacts:
     paths:
