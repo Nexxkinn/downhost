@@ -49,19 +49,21 @@ export async function Task_Start({ type, download, hash, length, offset, compile
         case DownType.PAGES: {
             if ('input' in download) throw new Error("wrong DownType.");
 
-            let page_downloaded = offset ?? 0;
-
+            
             await ensureDir(`${config.temp_dir}`);
             const path = join(config.temp_dir, compiledFilename);
-            const path_exist = await ensureFile(path);
-            const zip =  path_exist
-                ? await open_zip(path)
+            const zip =  await ensureFile(path)
+                ? await open_zip(path).catch(() => create_zip(path))
                 : await create_zip(path);
             
             const push = async (file:Uint8Array,filename:string) => {
                 if('push' in zip) await zip.push(file,filename);
                 else await zip.insert(file,filename);
             }
+
+            let page_downloaded = 'push' in zip 
+                ? offset ?? 0
+                : 0;
             
             setSize(length);
 

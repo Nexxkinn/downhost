@@ -19,7 +19,7 @@ export async function AuthMiddleware(ctx:Context,next: ()=> Promise<unknown>) {
         if(!status) return await next();
         else {
             ctx.response.body = "Successfully logged in. Redirecting...";
-            ctx.response.redirect("/");
+            ctx.response.redirect("../");
         }
     }
     else if(ctx.request.url.pathname.startsWith("/static/")) {
