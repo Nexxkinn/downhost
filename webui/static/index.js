@@ -50,6 +50,7 @@ let observer,catalog_observer,rem_icon,info_icon;
 /**
  * @type DocumentFragment
  */
+let liblistAutoRefresh = true;
 let liblist_element;
 let PAGE_SIZE=50, page=0;
 
@@ -100,17 +101,32 @@ async function init() {
     document.getElementById('dialog-close').onclick = () => dialog.hidden = true;
 
     submit.onclick = async (_) => {
-        // add loading
+        const input = field.value;
+        if (!input) return;
+
         field.disabled = true;
         submit.disabled = true;
-        const source = field.value;
-        if (!source) return;
-        const gql = await req({ api:'task/add', body: { source } });
+
+        if(input.startsWith('http')) {   
+            const gql = await req({ api:'task/add', body: { source: input } });
+            console.log(gql);
         field.value = "";
+        }
+        else {
+            // search
+            liblistAutoRefresh = false;
+            const result = await req({api:'lib/search', body: { query: input }})
+            if(result.status && !result.status) {
+                liblistAutoRefresh = true;
+                console.debug('failed.',result.message)
+            }
+            await liblist_update(result.list);
+        }
         field.disabled = false;
         submit.disabled = false;
-        console.log(gql);
     }
+
+    field.addEventListener("keydown", function (e) { if (e.key === 'Enter') { submit.click() } });
 
     catalogTab.onclick = (_) => {
         catalogTab.appearance = "accent";
@@ -133,7 +149,9 @@ async function init() {
     }
 
     field.valueChanged = (_) => {
-        submit.hidden = !field.value.startsWith('http');
+        submit.hidden = !field.value;
+        submit.textContent = field.value.startsWith('http') ? "Download" : "Search";
+        liblistAutoRefresh = !field.value.startsWith('http') && !field.value;
     }
 
     theme_switch.onclick = (_) => {
@@ -164,8 +182,8 @@ async function init() {
 
 async function refreshList() {
     const down = await req({ api:'task/list' });
-    const lib  = await req({ api:'lib/list' });
-    const lib_update = liblist_update(lib);
+    const lib  = liblistAutoRefresh ? await req({ api:'lib/list' }) : undefined;
+    const lib_update = liblistAutoRefresh ? liblist_update(lib) : undefined;
     const dow_update = downlist_update(down);
     await Promise.all([lib_update,dow_update]);
     window.setTimeout(refreshList, 1000);
@@ -191,13 +209,16 @@ async function req({ api, body = {} }) {
 async function liblist_update(list) {
     const table = document.getElementById('liblist');
     // remove unlisted item
+    const delete_id = [];
     for (const {id, remove} of _lib){
         let isListed = false;
         for(const { id:item_id } of list) {
             if ( item_id === id ) { isListed = true; break; }
         }
-        if(!isListed) { remove(); _lib.splice(_lib.findIndex((x) => x.id === id),1)}
+        if(!isListed) { remove(); delete_id.push(id)}
     }
+    
+    for(const id of delete_id) _lib.splice(_lib.findIndex((x) => x.id === id),1)
 
     // update
     let _need_update = false;

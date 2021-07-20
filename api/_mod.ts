@@ -1,6 +1,6 @@
 import { DB } from './_deps.ts';
 import { task_add, task_list, task_update } from './task/_mod.ts';
-import { lib_gallery, lib_remove, lib_list } from './library/_mod.ts';
+import { lib_gallery, lib_remove, lib_list, lib_search } from './library/_mod.ts';
 
 export async function api({type, func, body }: any, db: DB): Promise<string | undefined> {
     try {
@@ -40,6 +40,10 @@ async function lib({func,body}:any, db:DB) {
         case "remove": {
             const { id } = body;
             return await lib_remove({ id, db });
+        }
+        case 'search': {
+            const { query } = body;
+            return await lib_search({ query , db });
         }
         case "g": {
             const { id } = body;
