@@ -52,7 +52,7 @@ let observer,catalog_observer,rem_icon,info_icon;
  */
 let liblistAutoRefresh = true;
 let liblist_element;
-let PAGE_SIZE=50, page=0;
+let PAGE_SIZE=50;
 
 async function init() {
     const field    = document.getElementById('field');
@@ -87,7 +87,6 @@ async function init() {
     lib_observer = new IntersectionObserver((e,o) => {
         for(const entry of e){
             if(entry.isIntersecting && _lib.length >= PAGE_SIZE){
-                page++;
                 liblist_updateElement(false);
             }
         }
@@ -237,7 +236,8 @@ async function liblist_update(list) {
 
 function liblist_updateElement(prepend=true){
     const table = document.getElementById('liblist');
-    const items = _lib.slice(PAGE_SIZE*page,PAGE_SIZE*(page+1));
+    const offset = table.childElementCount;
+    const items = _lib.slice(offset,offset+PAGE_SIZE);
     let list = document.createDocumentFragment();
     for(const { item } of items) {
         if(table.contains(item)) continue;
@@ -308,7 +308,7 @@ function liblist(parent,args) {
     name.title = name_tn.nodeValue;
     name.appendChild(name_tn);
     
-    const remove = () =>{ parent.removeChild(item) };
+    const remove = () =>{ if(parent.contains(item)) parent.removeChild(item) };
 
     return {item, id,remove};
 }
