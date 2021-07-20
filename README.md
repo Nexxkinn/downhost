@@ -56,13 +56,13 @@ USE IT WITH YOUR OWN RISK!!!
 - prone to breaking changes in database
 
 ### Todo
-- [ ] Gallery page/API
-- [ ] Fancy directory listing
+- [x] Gallery page/API
+- [x] Fancy directory listing
 - [x] Metadata support
-- [ ] Reader client
+- [x] Reader client
 - [x] Restore download list
 - [x] Stop/Pause download list
-- [ ] Compactibilty with other apps
+- [?] Compactibilty with other apps
 
 ### Special Thanks
 - [feather icons](https://github.com/feathericons/feather)
