@@ -16,9 +16,8 @@ export async function metadata({link,offset}:DownMetaArgs): Promise<DownMeta> {
 
     const get_subdomain = (hash:string) => {
         let  num = parseInt(hash.slice(hash.length - 3, hash.length - 1),16);
-        const fe = num < 0x70 ? 2 : 3;
-             num = num < 0x49 ? 1 : num;
-        return String.fromCharCode(97 + (num % fe))
+        const off = num < 0x44 ? 2 : num < 0x88 ? 1 : 0;
+        return String.fromCharCode(97 + off) // (97 + (num % fe))
     }
 
     for( const {hash,name} of g_i.files) {

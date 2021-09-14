@@ -12,7 +12,7 @@ export async function AuthMiddleware(ctx:Context,next: ()=> Promise<unknown>) {
     if(!config.pass) return await next();
     const loginurl = config.base_url ? urljoin(config.base_url,'login') : "/login"
     const pathname = ctx.request.url.pathname;
-    const auth = ctx.cookies.get("Token");
+    const auth = await ctx.cookies.get("Token");
 
     if( pathname === "/login") {
         const status = check(auth);
