@@ -26,7 +26,7 @@ export async function metadata({link,offset}:DownMetaArgs): Promise<DownMeta> {
 
   const title = grab('<div id="gd2"><h1 id="gn">', '</h1>', html);
   const length = Number(grab('Length:</td><td class="gdt2">', ' pages', html));
-  const thumb = token + '/t/' + grab('background:transparent url(' + token + '/t/', ') 0 0 no-repeat">', html);
+  const thumb = token + '/t/' + grab('background:transparent url(' + token + '/t/', ') no-repeat">', html);
 
   // console.log({title, gallery_size, thumb})
 
