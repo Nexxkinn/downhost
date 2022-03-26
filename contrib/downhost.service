@@ -1,0 +1,16 @@
+[Unit]
+Description=downhost
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+WorkingDirectory=/opt/deno/downhost/
+ExecStart=/opt/deno/.deno/bin/deno run \
+         --allow-read \
+         --allow-write \
+         --allow-net http://nexxkinn.gitlab.io/downhost/dev/mod.ts
+User=deno
+Group=deno
+
+[Install]
+WantedBy=multi-user.target
