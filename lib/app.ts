@@ -40,8 +40,8 @@ export async function AppInit(db: DB) {
                 ctx.response.headers.append('Cache-Control', 'public, max-age=2592000, immutable')
             }
         })
-        .get('/static/:file', async (ctx) => {
-            ctx.response.body = getWebUI(`static/${ctx.params.file}`);
+        .get('/assets/:file', async (ctx) => {
+            ctx.response.body = getWebUI(`assets/${ctx.params.file}`);
             ctx.response.type = contentType(ctx.params.file || '');
             ctx.response.headers.append('X-Content-Type-Options', 'nosniff');
         })

@@ -27,7 +27,7 @@ function LoginPage() {
 			pass.disabled = true;
 			login.disabled = true;
 			msg.hidden = true;
-			const auth = await fetch(`${document.baseURI}/api/login`, {
+			const auth = await fetch(`${document.baseURI}login`, {
 				method:"POST",
 				body: JSON.stringify({"pass":pass.value})
 			})
