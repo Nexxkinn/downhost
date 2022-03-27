@@ -64,13 +64,16 @@
         .lib-list fast-card .item {
             width: 100%;
             grid-template-areas: "opt op" "title title";
-            background: var(--background-color);
         }
 
         .lib-list .item-button {
+            background: var(--neutral-fill-stealth-active);
             border-radius:unset;
             grid-area: opt;
             width:50%;
+        }
+        .lib-list .item-button:hover {
+            background: var(--neutral-fill-stealth-hover);
         }
 
         .lib-list .title {
@@ -81,7 +84,7 @@
             text-overflow: ellipsis;
             overflow: hidden;
             padding: 10px 10px 0 10px;
-            background: var(--neutral-fill-card-rest);
+            color: var(--neutral-foreground-rest);
             display: -webkit-box;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 2;

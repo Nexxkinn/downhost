@@ -1,17 +1,18 @@
 import { render } from 'solid-js/web';
 import { createStore, produce } from "solid-js/store";
-import { onMount, createSignal, For } from 'solid-js';
+import { onMount, createSignal, For, Show } from 'solid-js';
 import styles from '../../styles/home.css';
 import {
     fastButton,
     fastTextField,
-    accentColor,
+    fastDivider,
     baseLayerLuminance,
-    fillColor,
     provideFASTDesignSystem
 } from "@microsoft/fast-components";
 import { del_icon, inf_icon, sett_icon } from "./icons";
 import { SettingsPanel } from "./settingsPanel";
+import { DownPanel } from "./downPanel";
+import { GallPanel } from "./galleryPanel";
 
 type Item = {
     id: number,
@@ -39,64 +40,11 @@ const req = async ({ api, body = {} }) => {
     return await res.json();
 }
 
-function GallPanel({ visibility }) {
-    return <>
-        <For each={list.gallery}>{({ id, title }, i) => {
-            <fast-card>
-                <div>
-                    <a href={document.baseURI + 'reader/' + id}>
-                        <img style={{ width: '100%' }} src={document.baseURI + "thumb/" + id} />
-                    </a>
-                </div>
-                <div style={{
-                    width: '100%',
-                    background: 'var(--background-color)',
-                    'grid-template-areas': `"opt opt" "title title"`
-                }}>
-                    <fast-button
-                        id="item-info"
-                        class="item-button"
-                        title="View this gallery"
-                        appearance="stealth">
-                        {inf_icon}
-                    </fast-button>
-                    <fast-button
-                        id="item-remove"
-                        class="item-button"
-                        title="Remove this gallery"
-                        appearance="stealth">
-                        {del_icon}
-                    </fast-button>
-                    <div class="title" id="item-title" title={title}> {title} </div>
-                </div>
-            </fast-card>
-        }}
-        </For>
-    </>
+const refresh = async () => {
+    const down = await req({ api: 'task/list' });
+    const lib = liblistAutoRefresh ? await req({ api: 'lib/list' }) : undefined;
+    window.setTimeout(refreshList, 1000);
 }
-
-function DownPanel({ visibility }) {
-    return <>
-        <For each={list.gallery}>{({ id, title, size, status, size_down }, i) => {
-            <fast-card>
-                <div style="grid-area: name;">{title}</div>
-                <div style="grid-area: opt;">
-                    <fast-button title="remove from the list" appearance="neutral">
-                        {del_icon}
-                    </fast-button>
-                </div>
-                <fast-progress
-                    style="grid-area: prog;"
-                    role="progressbar"
-                    max={size}
-                    value={size_down ? (size_down / size) * 100 : null}>
-                </fast-progress>
-            </fast-card>
-        }}
-        </For>
-    </>
-}
-
 
 function Page() {
     const [input, setInput] = createSignal("");
@@ -115,65 +63,63 @@ function Page() {
         console.log(gql);
     }
 
-    const Header = () => {
-        return <>
-            <div class="header">
-                <h1>DownHost</h1>
-                <div class="nav">
-                    <fast-button id="settings">{sett_icon}</fast-button>
-                </div>
+    const Header = () =>
+        <div class="header">
+            <h1>DownHost</h1>
+            <div class="nav">
+                <fast-button id="settings">{sett_icon}</fast-button>
             </div>
-        </>
-    };
+        </div>;
 
-    const Search = () => {
-        return <>
-            <div class="form">
-                <fast-text-field appearance="outline" placeholder="Search or put gallery link here..." autofocus id="field">
-                </fast-text-field>
-                <fast-button id="submit" hidden>Download</fast-button>
-            </div>
-        </>
-    };
+    const Search = () =>
+        <div class="form">
+            <fast-text-field id="field"
+                appearance="outline"
+                placeholder="Search or put gallery link here..."
+                autofocus />
+            <fast-button id="submit" hidden>Download</fast-button>
+        </div>;
 
-    const Navbar = () => {
-        return <>
-            <div id="nav" class="nav">
-                <fast-button class="nav-button" id="libraryTab" appearance="accent">Library</fast-button>
-                <fast-button class="nav-button" id="catalogTab" appearance="stealth">Downloads</fast-button>
-            </div>
-        </>
+    const Navbar = () =>
+        <div id="nav" class="nav">
+            <fast-button class="nav-button" id="libraryTab" appearance="accent">Library</fast-button>
+            <fast-button class="nav-button" id="catalogTab" appearance="stealth">Downloads</fast-button>
+        </div>
 
-    };
-
-    const Panel = () => {
-        return <>
-            <div id="panel">
-                <div id="downpanel" hidden>
-                    <div id="downlist" class="down-list" ></div>
-                </div>
-                <div id="libpanel" hidden>
-                    <div id="liblist" class="lib-list"></div>
-                    <div id="lib-footer"></div>
-                </div>
-            </div>
-        </>
-    };
+    const Panel = () => <>
+        <DownPanel list={list} />
+        <GallPanel list={list} />
+    </>;
 
     onMount(() => {
         provideFASTDesignSystem()
             .register(
                 fastTextField(),
-                fastButton()
+                fastButton(),
+                fastDivider()
             )
+
+        // This one handles darkmode.
+        // Ask MS who wants a feature to dynamically
+        // change a palete in a webapp.
         baseLayerLuminance.setValueFor(document, 0.1);
+        setList('gallery', [
+            { id: 1, title: 'uwuh' },
+            { id: 2, title: 'huwuh' },
+            { id: 3, title: 'miyuwuh' },
+            { id: 4, title: 'huwuh' },
+            { id: 5, title: 'miyuwuh' },
+            { id: 6, title: 'huwuh' },
+            { id: 7, title: 'miyuwuh' },
+
+        ]);
         // load item search
     })
     return <>
         <Header />
         <Search />
         <Navbar />
-        <fast-divider></fast-divider>
+        <fast-divider />
         <Panel />
         <SettingsPanel />
     </>
