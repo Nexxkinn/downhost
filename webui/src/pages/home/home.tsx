@@ -26,43 +26,9 @@ type DownItem = ItemArgs & {
 }
 
 const [list, setList] = createStore({ gallery: [], down: [] });
-
-const req = async ({ api, body = {} }) => {
-    const res = await fetch(`${document.baseURI}api/${api}`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(body)
-        })
-    return await res.json();
-}
-
-const refresh = async () => {
-    const down = await req({ api: 'task/list' });
-    const lib = liblistAutoRefresh ? await req({ api: 'lib/list' }) : undefined;
-    window.setTimeout(refreshList, 1000);
-}
+const [input, setInput] = createSignal("");
 
 function Page() {
-    const [input, setInput] = createSignal("");
-    const search = async (query: string) => {
-        const res = await req({ api: 'lib/search', body: { query } });
-
-        if (res.status && !res.status) {
-            console.debug('failed.', res.message);
-            return;
-        }
-        setList('gallery', res.list);
-    }
-
-    const add = async (url: string) => {
-        const gql = await req({ api: 'task/add', body: { source: input } });
-        console.log(gql);
-    }
-
     const Header = () =>
         <div class="header">
             <h1>DownHost</h1>
@@ -91,7 +57,7 @@ function Page() {
         <GallPanel list={list} />
     </>;
 
-    onMount(() => {
+    onMount(async () => {
         provideFASTDesignSystem()
             .register(
                 fastTextField(),
@@ -103,16 +69,18 @@ function Page() {
         // Ask MS who wants a feature to dynamically
         // change a palete in a webapp.
         baseLayerLuminance.setValueFor(document, 0.1);
-        setList('gallery', [
-            { id: 1, title: 'uwuh' },
-            { id: 2, title: 'huwuh' },
-            { id: 3, title: 'miyuwuh' },
-            { id: 4, title: 'huwuh' },
-            { id: 5, title: 'miyuwuh' },
-            { id: 6, title: 'huwuh' },
-            { id: 7, title: 'miyuwuh' },
 
-        ]);
+        // dummy
+        let dummy = [];
+        for(let _id=1; _id<=100; _id++) {
+            dummy.push({id:_id,title:Math.random().toString(16).substr(2, 8)})
+        }
+        setList('gallery', dummy);
+
+        // load gallery
+        //const lib = await req({ api: 'lib/list' });
+
+
         // load item search
     })
     return <>
@@ -123,6 +91,40 @@ function Page() {
         <Panel />
         <SettingsPanel />
     </>
+}
+
+const refresh = async () => {
+    const down = await req({ api: 'task/list' });
+    const lib = liblistAutoRefresh ? await req({ api: 'lib/list' }) : undefined;
+    window.setTimeout(refreshList, 1000);
+}
+
+const search = async (query: string) => {
+    const res = await req({ api: 'lib/search', body: { query } });
+
+    if (res.status && !res.status) {
+        console.debug('failed.', res.message);
+        return;
+    }
+    setList('gallery', res.list);
+}
+
+const add = async (url: string) => {
+    const gql = await req({ api: 'task/add', body: { source: input } });
+    console.log(gql);
+}
+
+const req = async ({ api, body = {} }) => {
+    const res = await fetch(`${document.baseURI}api/${api}`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(body)
+        })
+    return await res.json();
 }
 
 render(() => <Page style={styles} />, document.getElementById('root') as HTMLElement);
