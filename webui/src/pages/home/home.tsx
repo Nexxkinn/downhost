@@ -1,6 +1,6 @@
-import { render } from 'solid-js/web';
+import { render, Dynamic } from 'solid-js/web';
 import { createStore, produce } from "solid-js/store";
-import { onMount, createSignal, For, Show } from 'solid-js';
+import { onMount, createSignal, createEffect, For, Show} from 'solid-js';
 import styles from '../../styles/home.css';
 import {
     fastButton,
@@ -26,7 +26,6 @@ type DownItem = ItemArgs & {
 }
 
 const [list, setList] = createStore({ gallery: [], down: [] });
-const [input, setInput] = createSignal("");
 
 function Page() {
     const Header = () =>
@@ -37,25 +36,77 @@ function Page() {
             </div>
         </div>;
 
-    const Search = () =>
-        <div class="form">
-            <fast-text-field id="field"
+    const Search = () => {
+        const [input, setInput] = createSignal("");
+        let submit, textfield;
+        const submit_click = async (e) => {
+            submit.disabled = true;
+            textfield.disabled = true;
+            if (input().startsWith('http')) {
+                const gql = await req({ api: 'task/add', body: { source: input } });
+                console.log(gql);
+                textfield.value = "";
+            }
+            else {
+                // search
+                const res = await req({ api: 'lib/search', body: { query: input } })
+                if (res.status && !res.status) {
+                    console.debug('failed.', res.message);
+                    setList('gallery', []);
+                }
+                else setList('gallery', res.list);
+            }
+            submit.disabled = false;
+            textfield.disabled = false;
+        }
+
+        return <div class="form">
+            <fast-text-field ref={textfield}
+                autofocus
                 appearance="outline"
                 placeholder="Search or put gallery link here..."
-                autofocus />
-            <fast-button id="submit" hidden>Download</fast-button>
-        </div>;
-
-    const Navbar = () =>
-        <div id="nav" class="nav">
-            <fast-button class="nav-button" id="libraryTab" appearance="accent">Library</fast-button>
-            <fast-button class="nav-button" id="catalogTab" appearance="stealth">Downloads</fast-button>
+                onInput={(e) => setInput(e.target.value)}
+                onkeydown={(e) => { e.key === 'Enter' ? submit.click() : null } }
+            />
+            <fast-button ref={submit} hidden={!input()} onclick={submit_click}>
+                {input().startsWith('http') ? "Download" : "Search"}
+            </fast-button>
         </div>
+    };
 
-    const Panel = () => <>
-        <DownPanel list={list} />
-        <GallPanel list={list} />
-    </>;
+    const [panel, setPanel] = createSignal("gallery");
+    const panels = {
+        "gallery": () => <GallPanel list={list} />,
+        "down": () => <DownPanel list={list} />
+    }
+
+    const Navbar = () => {
+        let galtab, downtab;
+        const gal_click = () => {
+            galtab.appearance = "accent";
+            downtab.appearance = "stealth";
+            setPanel("gallery");
+        }
+        const down_click = () => {
+            galtab.appearance = "stealth";
+            downtab.appearance = "accent";
+            setPanel("down");
+        }
+        return <div class="nav">
+            <fast-button ref={galtab}
+                class="nav-button"
+                appearance="accent"
+                onclick={gal_click}>
+                Library
+            </fast-button>
+            <fast-button ref={downtab}
+                class="nav-button"
+                appearance="stealth"
+                onclick={down_click}>
+                Downloads
+            </fast-button>
+        </div>
+    };
 
     onMount(async () => {
         provideFASTDesignSystem()
@@ -71,15 +122,15 @@ function Page() {
         baseLayerLuminance.setValueFor(document, 0.1);
 
         // dummy
-        let dummy = [];
-        for(let _id=1; _id<=100; _id++) {
-            dummy.push({id:_id,title:Math.random().toString(16).substr(2, 8)})
-        }
-        setList('gallery', dummy);
+//         let dummy = [];
+//         for (let _id = 1; _id <= 101; _id++) {
+//             dummy.push({ id: _id, title: Math.random().toString(16).substr(2, 8) })
+//         }
+//         setList('gallery', dummy);
 
         // load gallery
-        //const lib = await req({ api: 'lib/list' });
-
+        const lib = await req({ api: 'lib/list' });
+        setList('gallery',lib);
 
         // load item search
     })
@@ -88,30 +139,9 @@ function Page() {
         <Search />
         <Navbar />
         <fast-divider />
-        <Panel />
+        <Dynamic component={panels[panel()]} />
         <SettingsPanel />
     </>
-}
-
-const refresh = async () => {
-    const down = await req({ api: 'task/list' });
-    const lib = liblistAutoRefresh ? await req({ api: 'lib/list' }) : undefined;
-    window.setTimeout(refreshList, 1000);
-}
-
-const search = async (query: string) => {
-    const res = await req({ api: 'lib/search', body: { query } });
-
-    if (res.status && !res.status) {
-        console.debug('failed.', res.message);
-        return;
-    }
-    setList('gallery', res.list);
-}
-
-const add = async (url: string) => {
-    const gql = await req({ api: 'task/add', body: { source: input } });
-    console.log(gql);
 }
 
 const req = async ({ api, body = {} }) => {

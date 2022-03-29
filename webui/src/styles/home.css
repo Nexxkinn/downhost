@@ -29,11 +29,11 @@
             place-items: flex-end;
             margin-bottom: 12px;
         }
-        .form > #field {
+        .form > fast-text-field {
             width: 100%;
         }
-        .form > #submit {
-            width: 96px;
+        .form > fast-button {
+            width: 100px;
             margin-left: 1em;
         }
 
@@ -122,9 +122,9 @@
         }
 
         @media only screen and (min-width: 600px) {
-            .nav {
+            /*.nav {
                 display: unset;
-            }
+            }*/
 
             .nav-button {
                 flex-grow: unset;

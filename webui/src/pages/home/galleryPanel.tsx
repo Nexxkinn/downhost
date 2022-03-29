@@ -10,7 +10,6 @@ export function GallPanel({ visible = true, list }) {
         const footer_obs = new IntersectionObserver((e, o) => {
             for (const entry of e) {
                 if (entry.isIntersecting && list.gallery.length >= _pagesize) {
-                    console.log('footer fired');
                     setPage(page()+1);
                 }
             }
@@ -20,8 +19,7 @@ export function GallPanel({ visible = true, list }) {
 
     return <Show when={visible}>
         <div class="lib-list">
-            <For each={list.gallery}>{(props, i) =>
-                <Show when={i() < _pagesize * page()}>
+            <For each={list.gallery.slice(0,_pagesize * page())}>{(props, i) =>
                     <fast-card>
                         <div>
                             <a href={document.baseURI + 'reader/' + props.id}>
@@ -49,8 +47,7 @@ export function GallPanel({ visible = true, list }) {
                             </fast-button>
                             <div class="title" id="item-title" title={props.title}> {props.title} </div>
                         </div>
-                    </fast-card>
-                </Show> }
+                    </fast-card>}
             </For>
             <div ref={footer}></div>
         </div>
