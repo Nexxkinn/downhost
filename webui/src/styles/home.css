@@ -94,12 +94,17 @@
             display: block;
         }
 
-        .down-list fast-card {
+        .down-list > fast-card {
             padding:10px;
             margin-bottom: 8px;
             display:grid;
             grid-auto-columns: auto 44px;
             grid-template-areas: 'name opt' 'prog prog';
+            background:var(--neutral-fill-stealth-active)
+        }
+
+        .down-list > fast-card >.title {
+            color:var(--neutral-foreground-rest)
         }
 
         .down-list fast-button {
