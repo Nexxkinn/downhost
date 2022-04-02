@@ -10,7 +10,7 @@ import {
 
 type ReaderMode = 'v' | 'h' | null;
 //dummy
-var len=1, list=['https://picsum.photos/id/1020/1000/2000','https://picsum.photos/id/1021/1000/2000','https://picsum.photos/id/1023/1000/600'], g=1
+//var len=1, list=['https://picsum.photos/id/1020/1000/2000','https://picsum.photos/id/1021/1000/2000','https://picsum.photos/id/1023/1000/600'], g=1
 const g_size = len, g_id = g, g_list = list;
 
 const [nav_visible, set_nav_visible] = createSignal(false);
@@ -46,8 +46,9 @@ function HReader(){
     let page=0;
     let _image, _show_nav;
     const _load = (pg:number) => {
-            if(pg < 0) { page=0; return; }
-            _image.src=g_list[page];
+            if(pg < 0 || pg >= g_size) page=0
+            _image.src= document.baseURI + 'image/'+g_id+'/'+g_list[page];
+            //_image.src=g_list[page];
 
         }
 
@@ -63,7 +64,7 @@ function HReader(){
             <div style={{width:"100%"}} id="right" onclick={()=>_load(page+=1)}/>
             <NavDialog />
         </div>
-        <img ref={_image} src={g_list[0]} />
+        <img ref={_image} src={document.baseURI + 'image/'+g_id+'/'+g_list[0]} />
     </>
 }
 

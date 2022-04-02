@@ -1,6 +1,7 @@
-import { onMount, For, Show, createSignal } from 'solid-js';
-import { createStore, produce } from "solid-js/store";
+import { req } from './req';
 import { del_icon, inf_icon } from "./icons";
+import { onMount, For, Show, createSignal, createEffect } from 'solid-js';
+import { createStore, produce } from "solid-js/store";
 
 export function GallPanel({ visible = true, list }) {
     let footer, _pagesize = 50;
@@ -37,7 +38,7 @@ export function GallPanel({ visible = true, list }) {
     })
 
     return <div class="lib-list">
-        <For each={list.gallery.slice(0, _pagesize * page())}>{({ id, title }, i) => {
+        <For each={list.gallery.slice(0, _pagesize * page()).sort((a,b) =>b.id - a.id)}>{({ id, title }, i) => {
             let thumb, card;
             onMount(() => observer.observe(thumb));
             return <fast-card ref={card}>

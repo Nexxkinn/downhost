@@ -1,5 +1,6 @@
+import { req } from './req';
 import { render, Dynamic } from 'solid-js/web';
-import { createStore, produce } from "solid-js/store";
+import { createStore, produce, reconcile } from "solid-js/store";
 import { onMount, createSignal, createEffect, For, Show } from 'solid-js';
 import styles from '../../styles/home.css';
 import {
@@ -27,6 +28,7 @@ type DownItem = ItemArgs & {
 }
 
 const [list, setList] = createStore({ gallery: [], down: [] });
+const [input, setInput] = createSignal("");
 
 function Page() {
     const Header = () =>
@@ -38,7 +40,6 @@ function Page() {
         </div>;
 
     const Search = () => {
-        const [input, setInput] = createSignal("");
         let submit, textfield;
         const submit_click = async (e) => {
             submit.disabled = true;
@@ -140,16 +141,26 @@ function Page() {
 
         // load gallery
         const refresh = async () => {
-            const down_upd = req({ api: 'task/list' });
-            const lib_upd  = req({ api: 'lib/list'  });
-            await Promise.all([down_upd, lib_upd]);
-            setList('gallery', await lib_upd);
-            setList('down', await down_upd);
+            switch (panel()) {
+                case "gallery": {
+                    const lib_upd = await req({ api: 'lib/list' });
+                    setList('gallery', reconcile(lib_upd));
+                    break;
+                }
+                case "down": {
+                    const down_upd = await req({ api: 'task/list' });
+                    setList('down', reconcile(down_upd));
+                    break;
+                }
+            }
+
             window.setTimeout(refresh, 1000);
         }
 
         await refresh();
         // load item search
+
+
     })
     return <>
         <Header />
@@ -159,19 +170,6 @@ function Page() {
         <Dynamic component={panels[panel()]} />
         <SettingsPanel />
     </>
-}
-
-const req = async ({ api, body = {} }) => {
-    const res = await fetch(`${document.baseURI}api/${api}`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(body)
-        })
-    return await res.json();
 }
 
 render(() => <Page style={styles} />, document.getElementById('root') as HTMLElement);
