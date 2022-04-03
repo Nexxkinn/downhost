@@ -12,9 +12,10 @@ import {
     provideFASTDesignSystem
 } from "@microsoft/fast-components";
 import { del_icon, inf_icon, sett_icon } from "./icons";
-import { SettingsPanel } from "./settingsPanel";
-import { DownPanel } from "./downPanel";
-import { GallPanel } from "./galleryPanel";
+import { SettingsPanel } from "./SettingsPanel";
+import { DownPanel } from "./DownPanel";
+import { GallPanel } from "./GalleryPanel";
+import { Search } from "./Search";
 
 type Item = {
     id: number,
@@ -28,9 +29,10 @@ type DownItem = ItemArgs & {
 }
 
 const [list, setList] = createStore({ gallery: [], down: [] });
-const [input, setInput] = createSignal("");
 
 function Page() {
+    const [GalAutoRefresh,setGalAutoRefresh] = createSignal(true);
+
     const Header = () =>
         <div class="header">
             <h1>DownHost</h1>
@@ -39,50 +41,13 @@ function Page() {
             </div>
         </div>;
 
-    const Search = () => {
-        let submit, textfield;
-        const submit_click = async (e) => {
-            submit.disabled = true;
-            textfield.disabled = true;
-            if (input().startsWith('http')) {
-                const gql = await req({ api: 'task/add', body: { source: input() } });
-                console.log(gql);
-                textfield.value = "";
-            }
-            else {
-                // search
-                const res = await req({ api: 'lib/search', body: { query: input() } })
-                if (res.status && !res.status) {
-                    console.debug('failed.', res.message);
-                    setList('gallery', []);
-                }
-                else setList('gallery', res.list);
-            }
-            submit.disabled = false;
-            textfield.disabled = false;
-        }
-
-        return <div class="form">
-            <fast-text-field ref={textfield}
-                autofocus
-                appearance="outline"
-                placeholder="Search or put gallery link here..."
-                onInput={(e) => setInput(e.target.value)}
-                onkeydown={(e) => { e.key === 'Enter' ? submit.click() : null }}
-            />
-            <fast-button ref={submit} hidden={!input()} onclick={submit_click}>
-                {input().startsWith('http') ? "Download" : "Search"}
-            </fast-button>
-        </div>
-    };
-
     const [panel, setPanel] = createSignal("gallery");
     const panels = {
         "gallery": () => <GallPanel list={list} />,
         "down": () => <DownPanel list={list} />
     }
 
-    const Navbar = () => {
+    const NavBar = () => {
         let galtab, downtab;
         const gal_click = () => {
             galtab.appearance = "accent";
@@ -143,8 +108,10 @@ function Page() {
         const refresh = async () => {
             switch (panel()) {
                 case "gallery": {
-                    const lib_upd = await req({ api: 'lib/list' });
-                    setList('gallery', reconcile(lib_upd));
+                    if(GalAutoRefresh()) {
+                        const lib_upd = await req({ api: 'lib/list' });
+                        setList('gallery', reconcile(lib_upd));
+                    }
                     break;
                 }
                 case "down": {
@@ -164,8 +131,8 @@ function Page() {
     })
     return <>
         <Header />
-        <Search />
-        <Navbar />
+        <Search setList={setList} SetGalAutoRefresh={setGalAutoRefresh}/>
+        <NavBar />
         <fast-divider />
         <Dynamic component={panels[panel()]} />
         <SettingsPanel />
