@@ -8,6 +8,7 @@ const outDir = resolve(__dirname,'dist');
 export default defineConfig({
   root,
   plugins: [solidPlugin()],
+  base:'',
   build: {
     outDir,
     emptyOutDir: 'true',
