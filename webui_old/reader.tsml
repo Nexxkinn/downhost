@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <base href="{@base_url}" target="_blank">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="128x128" href="static/icon.png">
+    <script type="module" src="static/fast-components.min.js"></script>
+    <script src="static/reader.js"></script>
+    <title>{@title}</title>
+    <style>
+        :root {
+            --background-color: #181818;
+            --navbar-height: 94px;
+            --section-height-spacing: 100px 0px;
+            --section-height-spacing-mobile: 50px 0px;
+        }
+
+        html,
+        body {
+            background-color: var(--background-color);
+            font-family: SegoeUIVF, Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif;
+            max-width: 842px;
+            margin: 0 auto;
+        }
+        img {
+            padding: 8px 0;
+            width: 100%;
+            height: auto;
+            min-height: calc(100vw / 1.77777);
+        }
+    </style>
+</head>
+<body>
+    <script>
+        var len = {@length};
+        var list = {@list};
+        var g = {@id};
+    </script>
+</body>
+</html>

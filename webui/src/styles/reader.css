@@ -1,0 +1,27 @@
+:root {
+            --background-color: #181818;
+            --navbar-height: 94px;
+            --section-height-spacing: 100px 0px;
+            --section-height-spacing-mobile: 50px 0px;
+        }
+
+        html,
+        body {
+            background-color: var(--background-color);
+            font-family: SegoeUIVF, Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif;
+            margin:0;
+        }
+        img {
+            height: auto;
+            max-width: 100%;
+            margin: 0 auto;
+            max-height: 100vh;
+            display: flex;
+        }
+
+        img>#v {
+            padding: 8px 0;
+            width: 100%;
+            height: auto;
+            min-height: calc(100vw / 1.77777);
+        }

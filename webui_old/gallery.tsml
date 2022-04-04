@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <base href="{@base_url}" target="_blank">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="128x128" href="static/icon.png">
+    <!-- <script type="module" src="https://unpkg.com/@microsoft/fast-components"></script> -->
+    <script type="module" src="static/fast-components.min.js"></script>
+    <script src="static/index.js"></script>
+    <title>{@title}</title>
+    <style>
+        :root {
+            --background-color: #181818;
+            --navbar-height: 94px;
+            --section-height-spacing: 100px 0px;
+            --section-height-spacing-mobile: 50px 0px;
+        }
+
+        html,
+        body {
+            background-color: var(--background-color);
+            font-family: SegoeUIVF, Segoe UI, SegoeUI, Helvetica Neue, Helvetica, Arial, sans-serif;
+            max-width: 842px;
+            margin: 0 auto;
+            padding: 1em;
+        }
+        
+        .header {
+            display: inline-flex;
+            width: 100%;
+        }
+
+        .header > .nav {
+            margin: auto 0 auto auto;
+        }
+
+        .form {
+            width: 100%;
+            display: inline-flex;
+            place-items: flex-end;
+            margin-bottom: 12px;
+        }
+        .form > #field {
+            width: 100%;
+        }
+        .form > #submit {
+            width: 96px;
+            margin-left: 1em;
+        }
+
+        .content {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+        }
+        .content[hidden] {
+            display: none;
+        }
+
+        .desc {
+            margin: auto 0 auto 12px;
+            width: 100%;
+        }
+
+        .lib-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .lib-list fast-card {
+            display: grid;
+            /* width: 150px; */
+        }
+
+        .lib-list fast-card .item {
+            width: 100%;
+            grid-template-areas: "opt op" "title title";
+            background: var(--background-color);
+        }
+
+        .lib-list .item-button {
+            border-radius:unset;
+            grid-area: opt;
+            width:50%;
+        }
+
+        .lib-list .title {
+            grid-area: title;
+            font-weight: 500;
+            font-size: 14px;
+            width: 120px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            padding: 10px 10px 0 10px;
+            background: var(--neutral-fill-card-rest);
+            display: -webkit-box;
+            -webkit-box-orient: vertical; 
+            -webkit-line-clamp: 2;
+        }
+
+        .down-list {
+            display: block;
+        }
+
+        .down-list fast-card {
+            padding:10px;
+            margin-bottom: 8px;
+            display:grid;
+            grid-auto-columns: auto 44px;
+            grid-template-areas: 'name opt' 'prog prog';
+        }
+
+        .down-list fast-button {
+            width: 32px;
+            height: 32px;
+            margin-left: 4px;
+        }
+
+        .nav {
+            display: flex;
+        }
+
+        .nav-button {
+            flex-grow: 1;
+            width: 50%;
+        }
+
+        .settings-dialog {
+            padding: 0 14px;
+        }
+
+        @media only screen and (min-width: 600px) {
+            .nav {
+                display: unset;
+            }
+
+            .nav-button {
+                flex-grow: unset;
+                width: unset;
+                min-width: 80px;
+            }
+
+            .lib-list {
+                grid-template-columns:repeat(5,1fr)
+            }
+            
+            .lib-list .title {
+                width: 130px;
+            }
+        }
+
+        @media screen and (max-width:875px) {
+            .lib-list {
+                grid-template-columns:repeat(4,1fr)
+            }
+        }
+
+        @media screen and (max-width:703px) {
+            .lib-list {
+                grid-template-columns:repeat(3,1fr)
+            }
+        }
+
+        @media screen and (max-width:545px) {
+            .lib-list {
+                grid-template-columns:repeat(2,1fr)
+            }
+        }
+
+        @media screen and (max-width:358px) {
+            .lib-list {
+                grid-template-columns:repeat(1,1fr)
+            }
+            .lib-list .title {
+                width: 80%;
+            }
+        }
+
+        /* desktop or pointer-supported devices */
+        @media (hover: hover) {
+            .lib-list .item-button {
+                display: none;
+            }
+
+            .lib-list fast-card {
+                grid-auto-rows: 190px 60px;
+            }
+            
+            .lib-list fast-card:hover {
+                grid-auto-rows: 150px 100px;
+            }
+
+            .lib-list fast-card:hover .item-button {
+                display: inline-grid;
+            }
+        }
+
+        /* smartphones or touch-supported devices */
+        @media (hover: none) {
+            .lib-list fast-card {
+                grid-auto-rows: 150px 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+
+</body>
+</html>

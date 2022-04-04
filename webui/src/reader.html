@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <base href="{@base_url}" target="_blank">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="128x128" href="static/icon.png">
+  <title>{@title}</title>
+</head>
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <fast-design-system-provider id="root" class="provider" use-defaults></fast-design-system-provider>
+  <script>
+      var len = {@length};
+      var list = {@list};
+      var g = {@id};
+  </script>
+  <script src="/pages/reader.tsx" type="module"></script>
+</body>
+</html>

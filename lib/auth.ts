@@ -22,7 +22,7 @@ export async function AuthMiddleware(ctx:Context,next: ()=> Promise<unknown>) {
             ctx.response.redirect("../");
         }
     }
-    else if(ctx.request.url.pathname.startsWith("/static/")) {
+    else if(ctx.request.url.pathname.startsWith("/assets/")) {
         return await next();
     }
     else {

@@ -5,5 +5,5 @@ import { DB } from "../deps.ts";
 const title = "DownHost";
 
 export default async function handler (req:Request,db:DB){
-    return await render("index.tsml",{title})
+    return await render("home.html",{title})
 }
