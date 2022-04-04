@@ -4,6 +4,7 @@ import styles from '../styles/login.css';
 import {
     fastButton,
 	fastTextField,
+    baseLayerLuminance,
     provideFASTDesignSystem
 } from "@microsoft/fast-components";
 
@@ -16,6 +17,8 @@ function LoginPage() {
 				fastTextField(),
 				fastButton()
 			)
+
+		baseLayerLuminance.setValueFor(document, 0.1);
 
 		const notify = ({success,message}) => {
 			msg.style.backgroundColor = success ? "#04AA6D" : "#DA1A5F";
@@ -35,7 +38,7 @@ function LoginPage() {
 			if(auth.status !== 200){
 				pass.disabled = false;
 				login.disabled = false;
-				const message = auth.status === 401 ? "Wrong username or password" : `${auth.status}:${auth.statusText}`;
+				const message = auth.status === 401 ? "Wrong password" : `${auth.status}:${auth.statusText}`;
 				notify({success:false,message});
 			}
 			else {
