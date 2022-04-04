@@ -3,10 +3,10 @@ import { del_icon, inf_icon } from "./icons";
 import { onMount, For, Show, createSignal, createEffect } from 'solid-js';
 import { createStore, produce } from "solid-js/store";
 
-export function GallPanel({ visible = true, list }) {
+export function GallPanel({ visible = true, list, pageSignal}) {
     let footer, _pagesize = 50;
+    const [page, setPage] = pageSignal;
 
-    const [page, setPage] = createSignal(1);
     const observer = new IntersectionObserver((ent, obs) => {
         for (const e of ent) {
             if (!e.isIntersecting) continue;
@@ -26,10 +26,16 @@ export function GallPanel({ visible = true, list }) {
         window.open(document.baseURI + 'reader/' + id, '_blank')
     }
 
+    createEffect(() => {
+        console.log()
+    })
+
     onMount(() => {
         const footer_obs = new IntersectionObserver((e, o) => {
             for (const entry of e) {
-                if (entry.isIntersecting && list.gallery.length >= _pagesize) {
+                if ( entry.isIntersecting &&
+                     list.gallery.length >= _pagesize &&
+                    list.gallery.length - _pagesize * page() > 0 ) {
                     setPage(page() + 1);
                 }
             }
@@ -38,7 +44,7 @@ export function GallPanel({ visible = true, list }) {
     })
 
     return <div class="lib-list">
-        <For each={list.gallery.slice(0, _pagesize * page()).sort((a,b) =>b.id - a.id)}>{({ id, title }, i) => {
+        <For each={list.gallery.slice( Math.max( 0, list.gallery.length - _pagesize * page())).sort((a,b) =>b.id - a.id)}>{({ id, title }, i) => {
             let thumb, card;
             onMount(() => observer.observe(thumb));
             return <fast-card ref={card}>

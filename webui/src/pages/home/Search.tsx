@@ -1,7 +1,7 @@
 import { req } from "./req";
 import { createSignal, createEffect } from 'solid-js';
 
-export function Search({setList,SetGalAutoRefresh}) {
+export function Search({setList,SetGalAutoRefresh, resetPage}) {
     let submit, textfield;
 	const [input, setInput] = createSignal("");
 
@@ -22,6 +22,7 @@ export function Search({setList,SetGalAutoRefresh}) {
                 setList('gallery', []);
             }
             else setList('gallery', res.list);
+            resetPage();
         }
         submit.disabled = false;
         textfield.disabled = false;

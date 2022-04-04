@@ -29,9 +29,10 @@ type DownItem = ItemArgs & {
 }
 
 const [list, setList] = createStore({ gallery: [], down: [] });
+const [page, setPage] = createSignal(1);
 
 function Page() {
-    const [GalAutoRefresh,setGalAutoRefresh] = createSignal(true);
+    const [GalAutoRefresh, setGalAutoRefresh] = createSignal(true);
 
     const Header = () =>
         <div class="header">
@@ -43,7 +44,7 @@ function Page() {
 
     const [panel, setPanel] = createSignal("gallery");
     const panels = {
-        "gallery": () => <GallPanel list={list} />,
+        "gallery": () => <GallPanel list={list} pageSignal={[page, setPage]} />,
         "down": () => <DownPanel list={list} />
     }
 
@@ -89,17 +90,17 @@ function Page() {
         // change a palete in a webapp.
         baseLayerLuminance.setValueFor(document, 0.1);
 
-        // dummy
-        //         let dummy = [];
-        //         for (let _id = 1; _id <= 101; _id++) {
-        //             dummy.push({
-        //                 id: _id,
-        //                 title: Math.random().toString(16).substr(2, 8),
-        //                 size: 100,
-        //                 size_down: Math.floor(Math.random() * (100 - 0 + 1) + 0),
-        //                 status:1
-        //             })
-        //         }
+        //dummy
+        //                 let dummy = [];
+        //                 for (let _id = 1; _id <= 101; _id++) {
+        //                     dummy.push({
+        //                         id: _id,
+        //                         title: Math.random().toString(16).substr(2, 8),
+        //                         size: 100,
+        //                         size_down: Math.floor(Math.random() * (100 - 0 + 1) + 0),
+        //                         status:1
+        //                     })
+        //                 }
         //setList('down', dummy);
         //setList('gallery',dummy);
         //console.log({ dummy });
@@ -108,16 +109,17 @@ function Page() {
         const refresh = async () => {
             switch (panel()) {
                 case "gallery": {
-                    if(GalAutoRefresh()) {
-                        const lib_upd = await req({ api: 'lib/list' });
-                        setList('gallery', reconcile(lib_upd));
+                    if (GalAutoRefresh()) {
+                        const upd = await req({ api: 'lib/list' });
+                        setList('gallery', reconcile(upd));
                     }
                     break;
                 }
                 case "down": {
-                    const down_upd = await req({ api: 'task/list' });
-                    setList('down', reconcile(down_upd));
+                    const upd = await req({ api: 'task/list' });
+                    setList('down', reconcile(upd));
                     break;
+
                 }
             }
 
@@ -131,7 +133,7 @@ function Page() {
     })
     return <>
         <Header />
-        <Search setList={setList} SetGalAutoRefresh={setGalAutoRefresh}/>
+        <Search setList={setList} SetGalAutoRefresh={setGalAutoRefresh} resetPage={() => setPage(1)} />
         <NavBar />
         <fast-divider />
         <Dynamic component={panels[panel()]} />
