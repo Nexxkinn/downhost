@@ -6,7 +6,7 @@ pages:
   stage: gen
   script:
     - apk add yarn
-    - pushd ../webui
+    - pushd webui
     - yarn run build
     - popd
     - deno run --allow-read --allow-write .gitlab/client_compile.ts
