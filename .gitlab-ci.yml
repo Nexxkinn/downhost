@@ -5,6 +5,10 @@ stages:
 pages:
   stage: gen
   script:
+    - apk add yarn
+    - pushd ../webui
+    - yarn run build
+    - popd
     - deno run --allow-read --allow-write .gitlab/client_compile.ts
     - mkdir public "public/$CI_COMMIT_SHORT_SHA/"
     - cp -r api/ cli/ lib/ route/ "public/$CI_COMMIT_SHORT_SHA/"

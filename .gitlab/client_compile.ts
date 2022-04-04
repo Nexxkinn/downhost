@@ -14,7 +14,7 @@ async function scanClientDir() {
         }
 
     }
-    Deno.chdir('webui')
+    Deno.chdir('webui/dist')
     await scan('./');
     Deno.chdir('../');
     
@@ -23,6 +23,7 @@ async function scanClientDir() {
 }
 
 async function compileFile(path:string){
+    console.log('compiling: '+path);
     const file = await Deno.readFile(path);
     return encode(file);
 }
