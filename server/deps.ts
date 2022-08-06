@@ -1,4 +1,4 @@
-export { DB } from "https://deno.land/x/sqlite@v2.5.0/mod.ts";
+export { DB } from "https://deno.land/x/sqlite@v3.4.0/mod.ts";
 export { Application, Request, Router, Context } from "https://deno.land/x/oak/mod.ts";
 export { contentType } from "https://deno.land/x/media_types/mod.ts";
 export { join } from "https://deno.land/std@0.101.0/path/mod.ts";

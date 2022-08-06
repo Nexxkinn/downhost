@@ -1,6 +1,34 @@
-import { DB } from './_deps.ts';
+import { DB, Router } from './_deps.ts';
+import { auth } from '../lib/_mod.ts';
 import { task_add, task_list, task_update } from './task/_mod.ts';
 import { lib_gallery, lib_remove, lib_list, lib_search } from './library/_mod.ts';
+
+export function api_router(db:DB) {
+    const router = new Router();
+    router
+        .post('/api/login', async(ctx) => {
+            const body = await ctx.request.body({ type: 'json' }).value;
+            if (body) {
+                const token = auth(body.pass);
+                if (token) {
+                    ctx.cookies.set('Token',token)
+                    ctx.cookies.set('Max-Age',String(60*60*24)) // 1 day.
+                    ctx.response.status = 200;
+                }
+                else ctx.response.status = 401;
+            } 
+            else ctx.response.status = 401;
+        })
+        .post('/api/:type/:function', async (ctx) => {
+            const body = await ctx.request.body({ type: 'json' }).value;
+            const type = ctx.params.type;
+            const func = ctx.params.function;
+            ctx.response.body = await api({ type, func, body }, db);
+        })
+    
+    return router
+
+}
 
 export async function api({type, func, body }: any, db: DB): Promise<string | undefined> {
     try {
