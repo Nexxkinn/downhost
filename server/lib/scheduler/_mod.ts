@@ -32,7 +32,7 @@ export async function addTask(args:addTaskArgs){
     for ( let {ns,tag} of tags) {
         tag = tag.replaceAll(" ","_"); // ensure there'll be no spaces on tag.
         db.query(`INSERT OR IGNORE INTO tagrepo(ns, tag) VALUES(?, ?)`,[ns,tag]);
-        const [[id]] = db.query (`SELECT id from tagrepo WHERE ns=? AND tag=? LIMIT 1`,[ns,tag]);
+        const [[id]] = db.query<[number]>(`SELECT id from tagrepo WHERE ns=? AND tag=? LIMIT 1`,[ns,tag]);
         db.query(`INSERT OR IGNORE INTO tag(hash, tag_id) VALUES(?, ?)`,[hash,id]);
     }
 

@@ -40,8 +40,8 @@ function start_database() {
 }
 
 async function main() {
-    log(
-        `#=============================#
+    log(`
+        #=============================#
         #                             #
         #         HHH     HHH         #
         #         HHH     HHH         #
@@ -81,7 +81,7 @@ async function main() {
     const db = start_database();
 
     log('Restoring download tasks...')
-    const res = db.query("SELECT hash FROM catalog WHERE status != 3");
+    const res = db.query<[string]>("SELECT hash FROM catalog WHERE status != 3");
     for await (const [hash] of res) { restoreTask(hash,db) }
 
     log('Initialize Server...');

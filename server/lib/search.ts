@@ -20,13 +20,14 @@ export async function search(query: string, db:DB) {
       if (list.length === 0) return [];
 
       const tagid_list:string[] = [];
+      const query = `
+         SELECT GROUP_CONCAT(id) as tag_id
+         FROM   tagrepo
+         WHERE  tag LIKE ?`
+
       for (const kw of list) {
-         const [[tag_id]] = db.query(`
-            SELECT GROUP_CONCAT(id) as tag_id
-            FROM tagrepo
-            WHERE tag LIKE ?`,
-            ['%'+kw+'%'] );
-         tagid_list.push(tag_id);
+         for ( const [tag_id] of db.query<[string]>(query,['%'+kw+'%']) )
+            tagid_list.push(tag_id);
       }
       return tagid_list;
    }

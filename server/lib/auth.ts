@@ -10,11 +10,12 @@ const _sessionlist:session[] = [];
 
 export async function AuthMiddleware(ctx:Context,next: ()=> Promise<unknown>) {
     if(!config.pass) return await next();
+    console.log({path:ctx.request.url.pathname});
     const loginurl = config.base_url ? urljoin(config.base_url,'login') : "/login"
     const pathname = ctx.request.url.pathname;
     const auth = await ctx.cookies.get("Token");
 
-    if( pathname === "/login") {
+    if( pathname === "/login" || pathname === "/api/login") {
         const status = check(auth);
         if(!status) return await next();
         else {

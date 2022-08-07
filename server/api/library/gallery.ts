@@ -2,7 +2,7 @@ import { join, DB } from "../_deps.ts";
 import { config, ensureFile, getFilenames } from "../../lib/_mod.ts";
 
 export default async function handler(id:number, db : DB) {
-    const query = Array.from(db.query('SELECT filename,length FROM catalog WHERE id=? LIMIT 1',[id]));
+    const query = Array.from(db.query<[string]>('SELECT filename,length FROM catalog WHERE id=? LIMIT 1',[id]));
     // TODO: handle tags.
     if (!query.length) return '404: Unknown ID:'+id;
     const [[filename]] = query;

@@ -3,7 +3,7 @@ import { addTask, log, resolve } from "../_mod.ts";
 
 export async function restoreTask( hash:string, db:DB ){
     
-    let   [downloadTask]  = db.query("SELECT id, size_down FROM download WHERE hash=? LIMIT 1", [hash]);
+    let [downloadTask]  = db.query<[number,number]>(`SELECT id, size_down FROM download WHERE hash=? LIMIT 1`,[hash]);
     if( !downloadTask ) {
         db.query("DELETE FROM catalog WHERE hash=?", [hash]);
         db.query("DELETE FROM download WHERE hash=?",[hash]);
@@ -12,9 +12,10 @@ export async function restoreTask( hash:string, db:DB ){
         return false;
     }
     const [id,offset] = downloadTask;
-    let   [[source]] = db.query("SELECT url FROM catalog where hash=? LIMIT 1", [hash]);
-    
-            source = new URL(source);
+
+    let url_query = db.prepareQuery<[string]>("SELECT url FROM catalog where hash=? LIMIT 1");
+    let [url] = url_query.one([hash]);
+    let source = new URL(url);
     const metadata = await resolve(source,offset);
 
     if (metadata.type === DownType.BULK ) {

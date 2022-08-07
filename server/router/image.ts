@@ -2,7 +2,7 @@ import { DB, join, get_entries } from "./_deps.ts";
 import { contentType } from "../deps.ts";
 
 export default async function handler(id:number,img_name:string,catalog_dir:string, db: DB) {
-    const query = db.query('SELECT filename FROM catalog WHERE id = ? LIMIT 1',[id]);
+    const query = db.query<[string]>('SELECT filename FROM catalog WHERE id = ? LIMIT 1',[id]);
     const [[filename]] = Array.from(query);
     const file = await Deno.open(join(catalog_dir,filename));
 
