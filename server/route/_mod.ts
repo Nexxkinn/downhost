@@ -4,7 +4,7 @@ import reader from './reader.ts';
 import thumb from './thumb.ts';
 import login from './login.ts';
 
-import { DB, Router, contentType } from './_deps.ts';
+import { DB, Router, typeByExtension } from './_deps.ts';
 import { config, getWebUI } from '../lib/_mod.ts';
 
 export function client_router(db: DB) {
@@ -39,7 +39,7 @@ export function client_router(db: DB) {
         })
         .get('/assets/:file', async (ctx) => {
             ctx.response.body = getWebUI(`assets/${ctx.params.file}`);
-            ctx.response.type = contentType(ctx.params.file || '');
+            ctx.response.type = typeByExtension(ctx.params.file.split('.').pop() || '');
             ctx.response.headers.append('X-Content-Type-Options', 'nosniff');
         })
     

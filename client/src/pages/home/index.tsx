@@ -22,14 +22,23 @@ type Item = {
     title: string
 }
 
-type DownItem = ItemArgs & {
+type DownItem = Item & {
     size: number,
     status: number,
     size_down: number
 }
 
+type DownSocketMessage = {
+    event:string,
+    content?: any | DownSocketMessage
+}
+
 const [list, setList] = createStore({ gallery: [], down: [] });
 const [page, setPage] = createSignal(1);
+const downsocket = new WebSocket('ws://localhost:8080/api/wss');
+const ds_send = (msg:DownSocketMessage) => {
+    downsocket.send(JSON.stringify(msg));
+}
 
 function Page() {
     const [GalAutoRefresh, setGalAutoRefresh] = createSignal(true);
@@ -76,6 +85,15 @@ function Page() {
         </div>
     };
 
+    createEffect( () => {
+        console.log(panel())
+        if (downsocket.readyState != downsocket.OPEN) return;
+        switch ( panel() ) {
+            case 'gallery' : { ds_send({event:'LIST'}); break; }
+            case 'down'    : { ds_send({event:'TASKS'}); break;}
+        }
+    })
+
     onMount(async () => {
         provideFASTDesignSystem()
             .register(
@@ -90,47 +108,28 @@ function Page() {
         // change a palete in a webapp.
         baseLayerLuminance.setValueFor(document, 0.1);
 
-        //dummy
-        //                 let dummy = [];
-        //                 for (let _id = 1; _id <= 101; _id++) {
-        //                     dummy.push({
-        //                         id: _id,
-        //                         title: Math.random().toString(16).substr(2, 8),
-        //                         size: 100,
-        //                         size_down: Math.floor(Math.random() * (100 - 0 + 1) + 0),
-        //                         status:1
-        //                     })
-        //                 }
-        //setList('down', dummy);
-        //setList('gallery',dummy);
-        //console.log({ dummy });
-
-        // load gallery
-        const refresh = async () => {
-            switch (panel()) {
-                case "gallery": {
-                    if (GalAutoRefresh()) {
-                        const upd = await req({ api: 'lib/list' });
-                        setList('gallery', reconcile(upd));
-                    }
-                    break;
-                }
-                case "down": {
-                    const upd = await req({ api: 'task/list' });
-                    setList('down', reconcile(upd));
-                    break;
-
-                }
-            }
-
-            window.setTimeout(refresh, 1000);
+        downsocket.onopen = () => {
+            console.log('Downsocket established');
+            ds_send({event:'LIST'});
+        }
+        downsocket.onclose = () => {
+            console.log('Downsocket closed')
         }
 
-        await refresh();
-        // load item search
-
+        downsocket.addEventListener('message', ({data} : MessageEvent<string>) => {
+            console.log({response:data})
+            const { event, content } : DownSocketMessage = JSON.parse(data);
+            if      ( event == 'LIST' ) {
+                setList('gallery', reconcile(JSON.parse(content)));
+            }
+            else if ( event == 'TASKS') {
+                setList('down', reconcile(JSON.parse(content)));
+            }
+        });
 
     })
+
+
     return <>
         <Header />
         <Search setList={setList} SetGalAutoRefresh={setGalAutoRefresh} resetPage={() => setPage(1)} />

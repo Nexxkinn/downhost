@@ -1,7 +1,16 @@
-import { DB } from '../deps.ts';
+import { DB } from '../_deps.ts';
 
+export default async function handler({ query, db }: { query:string[], db: DB }){
+    try {
+        const result = await search(query,db);
+        return JSON.stringify({list:result});
+    }
+    catch (e) {
+        return JSON.stringify({ status: false, message: e.message });
+    }
+}
 
-export async function search(query: string, db:DB) {
+export async function search(params: string[], db:DB) {
 
    // parse tag with name
    // add keyword into title and tag search
@@ -9,7 +18,7 @@ export async function search(query: string, db:DB) {
    // - tag match : +1
    // - title match : 1*match_percentage%
    // 
-   const { keywords } = parse(query);
+   // const { keywords } = parse(params);
 
    /**
     * wildcard keyword tag id search
@@ -32,7 +41,7 @@ export async function search(query: string, db:DB) {
       return tagid_list;
    }
 
-   const keyword_id = get_id(keywords);
+   const keyword_id = get_id(params);
 
 
    // proper tag id search

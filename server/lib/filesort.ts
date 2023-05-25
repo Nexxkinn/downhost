@@ -76,8 +76,8 @@ export function natsort(options: OptionsType = {}) {
         // hex or date detection
         const aHex = aa.match(hre)
         const bHex = bb.match(hre)
-        const av = (aHex && bHex) ? parseInt(aHex[0], 16) : (aArr.length !== 1 && Date.parse(aa))
-        const bv = (aHex && bHex)
+        const av:any = (aHex && bHex) ? parseInt(aHex[0], 16) : (aArr.length !== 1 && Date.parse(aa))
+        const bv:any = (aHex && bHex)
             ? parseInt(bHex[0], 16)
             : av && bb.match(dre) && Date.parse(bb) || null
 

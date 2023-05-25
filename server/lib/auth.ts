@@ -56,7 +56,7 @@ function CreateSesion() {
 
 function check(session:string | undefined) {
     if (!session) return false;
-    const now = getNumericDate(0); 
+    const now = getNumericDate(0) as Number; 
     const local = _sessionlist.find( x => x.t === session);
     if (!local ) return false;
     if ( local.e <= now ) { 

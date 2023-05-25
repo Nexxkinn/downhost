@@ -4,7 +4,7 @@ export {
     DB,
     Request,
     Router,
-    contentType,
+    typeByExtension,
     DownMode,
  } from '../deps.ts';
 

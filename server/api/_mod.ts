@@ -1,7 +1,7 @@
 import { DB, Router } from './_deps.ts';
-import { auth } from '../lib/_mod.ts';
-import { task_add, task_list, task_update } from './task/_mod.ts';
-import { lib_gallery, lib_remove, lib_list, lib_search } from './library/_mod.ts';
+import { auth, log } from '../lib/_mod.ts';
+import task_router, { task_list } from './task/_mod.ts';
+import lib_router, { gallery_list } from './gallery/_mod.ts';
 
 export function api_router(db:DB) {
     const router = new Router();
@@ -19,64 +19,68 @@ export function api_router(db:DB) {
             } 
             else ctx.response.status = 401;
         })
-        .post('/api/:type/:function', async (ctx) => {
-            const body = await ctx.request.body({ type: 'json' }).value;
-            const type = ctx.params.type;
-            const func = ctx.params.function;
-            ctx.response.body = await api({ type, func, body }, db);
-        })
+    
+    const task = task_router(db);
+    const library = lib_router(db);
+    const downsocket = downsocket_router(db);
+
+    router.use('/api/tasks/',task.routes())
+    router.use('/api/lib/',library.routes())
+    router.use('/api',downsocket.routes())
     
     return router
-
 }
 
-export async function api({type, func, body }: any, db: DB): Promise<string | undefined> {
-    try {
-        switch (type) {
-            case "task": return await task({func,body},db);
-            case "lib" : return await lib({func,body},db);
-            default: return JSON.stringify({ status: false });
-        }
-    }
-    catch (e) {
-        console.log(e);
-    }
+
+type DownSocketMessage = {
+    event: string,
+    content?: any | DownSocketMessage
 }
 
-async function task({func,body}:any,db:DB) {
-    switch (func) {
-        case 'list': {
-            return await task_list(db);
-        }
-        case 'add': {
-            return await task_add({ source: new URL(body.source), db });
-        }
-        case 'start': case 'stop': case 'cancel': {
-            return await task_update(func,Number(body.id), db);
-        }
-        default: {
-            return JSON.stringify({ status: false });
-        }
-    }
+function downsocket_router(db:DB) {
+    const router = new Router();
+    router
+        .get('/wss', async (ctx) => {
+            // use websocket for gallery listing.
+            if (!ctx.isUpgradable) { ctx.throw(501) }
+
+            const ws = ctx.upgrade();
+            ws.onopen = () => { log(' Downsocket established ')}
+            ws.onmessage = async (m) => {
+
+                const { event } : DownSocketMessage = JSON.parse(m.data);
+
+                if      ( event == 'LIST' ) {
+                    const list = await gallery_list({db});
+                    const res : DownSocketMessage = { event: event, content: list }
+                    ws.send(JSON.stringify(res));
+                }
+                else if ( event == 'TASKS') {
+                    const list = await task_list(db);
+                    const res : DownSocketMessage = { event: event, content: list }
+                    ws.send(JSON.stringify(res));
+                }
+                else if ( event == 'ECHO' ) {
+                    const res : DownSocketMessage = { event: event, content: 'ECHO' }
+                    ws.send(JSON.stringify(res));
+                } 
+            }
+            ws.onclose = () => { log(' DownSocket closed ') }
+
+        })
+    
+    return router;
 }
 
-async function lib({func,body}:any, db:DB) {
-    switch(func) {
-        case "list": {
-            return await lib_list({db});
-        }
-        case "remove": {
-            const { id } = body;
-            return await lib_remove({ id, db });
-        }
-        case 'search': {
-            const { query } = body;
-            return await lib_search({ query , db });
-        }
-        case "g": {
-            const { id } = body;
-            return await lib_gallery(Number(id),db);
-        }
-        default: return JSON.stringify({ status: false });
-    }
-}
+// export async function api({type, func, body }: any, db: DB): Promise<string | undefined> {
+//     try {
+//         switch (type) {
+//             case "task": return await task({func,body},db);
+//             case "lib" : return await lib({func,body},db);
+//             default: return JSON.stringify({ status: false });
+//         }
+//     }
+//     catch (e) {
+//         console.log(e);
+//     }
+// }
