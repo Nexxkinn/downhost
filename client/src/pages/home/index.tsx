@@ -1,6 +1,6 @@
 import { req } from './req';
 import { render, Dynamic } from 'solid-js/web';
-import { createStore, produce, reconcile } from "solid-js/store";
+import { createStore, modifyMutable, produce, reconcile } from "solid-js/store";
 import { onMount, createSignal, createEffect, For, Show } from 'solid-js';
 import styles from '../../styles/home.css';
 import {
@@ -28,20 +28,44 @@ type DownItem = Item & {
     size_down: number
 }
 
-type DownSocketMessage = {
-    event:string,
-    content?: any | DownSocketMessage
+type GalleryListResult = {
+    offset: number,
+    is_end: boolean,
+    list: string
 }
 
-const [list, setList] = createStore({ gallery: [], down: [] });
-const [page, setPage] = createSignal(1);
-const downsocket = new WebSocket('ws://localhost:8080/api/wss');
-const ds_send = (msg:DownSocketMessage) => {
-    downsocket.send(JSON.stringify(msg));
+export type DownSocketMessage = {
+    event:string,
+    content?: GalleryListResult | DownSocketMessage
 }
+
+export type ListStorage = {
+    type: 'gallery' | 'search' | 'down',
+    gallery: {
+        offset: number,
+        is_end: boolean,
+        list: any[],
+        query: string
+    },
+    down: any[]
+}
+
+const isGListResult = (x:any): x is GalleryListResult => x.offset;
+
+const [storage, setStorage] = createStore<ListStorage>({ 
+    type:'gallery', 
+    gallery: { offset:0, is_end:false, query:'', list: new Array<any>()},
+    down: new Array<any>() 
+});
 
 function Page() {
-    const [GalAutoRefresh, setGalAutoRefresh] = createSignal(true);
+
+    const [panel, setPanel] = createSignal("gallery");
+
+    const socket = new WebSocket('ws://localhost:8080/api/wss');
+    const send = (msg:DownSocketMessage) => {
+        socket.send(JSON.stringify(msg));
+    }
 
     const Header = () =>
         <div class="header">
@@ -50,12 +74,6 @@ function Page() {
                 <fast-button id="settings">{sett_icon}</fast-button>
             </div>
         </div>;
-
-    const [panel, setPanel] = createSignal("gallery");
-    const panels = {
-        "gallery": () => <GallPanel list={list} pageSignal={[page, setPage]} />,
-        "down": () => <DownPanel list={list} />
-    }
 
     const NavBar = () => {
         let galtab, downtab;
@@ -86,11 +104,10 @@ function Page() {
     };
 
     createEffect( () => {
-        console.log(panel())
-        if (downsocket.readyState != downsocket.OPEN) return;
+        if (socket.readyState != socket.OPEN) return;
         switch ( panel() ) {
-            case 'gallery' : { ds_send({event:'LIST'}); break; }
-            case 'down'    : { ds_send({event:'TASKS'}); break;}
+            case 'gallery' : { send({event:'LIST'}); break; }
+            case 'down'    : { send({event:'TASKS'}); break;}
         }
     })
 
@@ -108,31 +125,53 @@ function Page() {
         // change a palete in a webapp.
         baseLayerLuminance.setValueFor(document, 0.1);
 
-        downsocket.onopen = () => {
+        socket.onopen = () => {
             console.log('Downsocket established');
-            ds_send({event:'LIST'});
         }
-        downsocket.onclose = () => {
+        socket.onclose = () => {
             console.log('Downsocket closed')
         }
 
-        downsocket.addEventListener('message', ({data} : MessageEvent<string>) => {
-            console.log({response:data})
+        socket.addEventListener('message', ({data} : MessageEvent<string>) => {
             const { event, content } : DownSocketMessage = JSON.parse(data);
-            if      ( event == 'LIST' ) {
-                setList('gallery', reconcile(JSON.parse(content)));
+            console.debug({socket_event:event});
+
+            if (isGListResult(content)) {
+                setStorage( 'gallery', produce( (g) => {
+
+                    switch ( event ) {
+                        case 'LIST':
+                        case 'SEARCH' : {
+                            g.list    = JSON.parse(content.list) ; break;
+                        }
+                        case 'EXT_LIST' : {
+                            g.list.push(JSON.parse(content.list)); break;
+                        }
+                    }
+
+                    g.offset = content.offset;
+                    g.is_end = content.is_end;
+                }));
             }
+            // else if ( event == 'NEW_G') {
+            //     let new_item:any = JSON.parse(content as any);
+            //     setStorage( 'gallery','list',(stor) => [new_item,...stor])
+            // }
             else if ( event == 'TASKS') {
-                setList('down', reconcile(JSON.parse(content)));
+                setStorage( 'down', JSON.parse(content as any));
             }
         });
 
     })
 
+    const panels = {
+        "gallery": () => <GallPanel storage={storage} socket_msg={send} />,
+        "down": () => <DownPanel list={storage} />
+    }
 
     return <>
         <Header />
-        <Search setList={setList} SetGalAutoRefresh={setGalAutoRefresh} resetPage={() => setPage(1)} />
+        <Search setList={setStorage} />
         <NavBar />
         <fast-divider />
         <Dynamic component={panels[panel()]} />

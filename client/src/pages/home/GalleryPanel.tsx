@@ -2,11 +2,19 @@ import { req } from './req';
 import { del_icon, inf_icon } from "./icons";
 import { onMount, For, Show, createSignal, createEffect } from 'solid-js';
 import { createStore, produce } from "solid-js/store";
+import { DownSocketMessage, ListStorage } from '.';
 
-export function GallPanel({ visible = true, list, pageSignal}) {
-    let footer, _pagesize = 50;
-    const [page, setPage] = pageSignal;
+type GallPanelArgs = {
+    visible: boolean,
+    storage: ListStorage,
+    socket_msg: ( msg: DownSocketMessage) => void
 
+}
+
+export function GallPanel({ visible = true, storage, socket_msg }:GallPanelArgs) {
+    let footer:any, _pageLimitSize = 50;
+
+    // lazy loading downhost thumbnails.
     const observer = new IntersectionObserver((ent, obs) => {
         for (const e of ent) {
             if (!e.isIntersecting) continue;
@@ -26,25 +34,25 @@ export function GallPanel({ visible = true, list, pageSignal}) {
         window.open(document.baseURI + 'reader/' + id, '_blank')
     }
 
-    createEffect(() => {
-        console.log()
-    })
-
+    // enable automatic extend page loading.
     onMount(() => {
         const footer_obs = new IntersectionObserver((e, o) => {
             for (const entry of e) {
-                if ( entry.isIntersecting &&
-                     list.gallery.length >= _pagesize &&
-                    list.gallery.length - _pagesize * page() > 0 ) {
-                    setPage(page() + 1);
+                if ( entry.isIntersecting && !storage.gallery.is_end ) {
+                    console.debug('Downsocket event EXT_LIST executed')
+
+                    const { offset, query } = storage.gallery;
+                    socket_msg({ event:'EXT_LIST',content:{ offset , query } as any}) // TODO: add types here
                 }
             }
         }, { threshold: 1 })
         footer_obs.observe(footer);
+
+        socket_msg({event:'LIST'});
     })
 
     return <div class="lib-list">
-        <For each={list.gallery.slice( Math.max( 0, list.gallery.length - _pagesize * page())).sort((a,b) =>b.id - a.id)}>{({ id, title }, i) => {
+        <For each={storage.gallery}>{({ id, title }, i) => {
             let thumb, card;
             onMount(() => observer.observe(thumb));
             return <fast-card ref={card}>

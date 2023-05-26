@@ -8,5 +8,5 @@ export default async function handler(db: DB) {
     for (const [id, title, status, size, size_down] of res) {
         if(status !== 3) list.push({ id, title, status, size, size_down })
     }
-    return JSON.stringify(list);
+    return list;
 }

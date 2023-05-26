@@ -12,9 +12,9 @@ export default async function handler({ id, db }: { id:number, db: DB }){
         db.query("DELETE FROM download WHERE hash=?",[hash]);
         db.query("DELETE FROM tag WHERE hash=?",[hash]);
         
-        return JSON.stringify({ status:true });
+        return { status:true };
     }
     catch(e) {
-        return JSON.stringify({ status: false, message: e.message });
+        return { status: false, message: e.message };
     }
 }

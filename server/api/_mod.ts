@@ -1,7 +1,7 @@
 import { DB, Router } from './_deps.ts';
 import { auth, log } from '../lib/_mod.ts';
 import task_router, { task_list } from './task/_mod.ts';
-import lib_router, { gallery_list } from './gallery/_mod.ts';
+import lib_router, { gallery_list, search } from './gallery/_mod.ts';
 
 export function api_router(db:DB) {
     const router = new Router();
@@ -31,13 +31,43 @@ export function api_router(db:DB) {
     return router
 }
 
+export type APIError = {
+    status: boolean,
+    message: string
+}
 
-type DownSocketMessage = {
-    event: string,
-    content?: any | DownSocketMessage
+const isError = (x:any) : x is APIError => 'status' in x;
+
+export type Gallery = {
+    id: number,
+    title: string
+}
+
+type GalleryListParams = {
+    offset: number,
+    query: string
+}
+
+type GalleryListResponse = {
+    offset: number,
+    is_end: boolean,
+    list: any[]
+}
+
+type DownSocketEvent = {
+    event: string
+}
+
+type DownSocketMessage  = DownSocketEvent & {
+    content?: GalleryListParams | DownSocketMessage
+}
+
+type DownSocketResponse = DownSocketEvent & {
+    content?: GalleryListResponse | DownSocketMessage
 }
 
 function downsocket_router(db:DB) {
+    const PAGE_SIZE_LIMIT = 50;
     const router = new Router();
     router
         .get('/wss', async (ctx) => {
@@ -48,20 +78,35 @@ function downsocket_router(db:DB) {
             ws.onopen = () => { log(' Downsocket established ')}
             ws.onmessage = async (m) => {
 
-                const { event } : DownSocketMessage = JSON.parse(m.data);
+                const { event, content } : DownSocketMessage = JSON.parse(m.data);
 
-                if      ( event == 'LIST' ) {
-                    const list = await gallery_list({db});
-                    const res : DownSocketMessage = { event: event, content: list }
-                    ws.send(JSON.stringify(res));
+                if      ( content && ( event == 'LIST' || event == 'EXT_LIST') ) {
+
+                    const { offset, query } = content as GalleryListParams;
+
+                    const list = !query 
+                     ? await gallery_list({db, offset, limit: PAGE_SIZE_LIMIT})
+                     : await search({db, query,offset, limit: PAGE_SIZE_LIMIT});
+
+                    if ( isError(list) ) {
+                        return ws.send(JSON.stringify({}));
+                    }
+                    const response : GalleryListResponse = {
+                        offset: list.at(-1)?.id || 0,
+                        is_end: list.length < PAGE_SIZE_LIMIT,
+                        list
+                    }
+                    const socket_response : DownSocketResponse = { event: event, content: response }
+                    ws.send(JSON.stringify(socket_response));
                 }
                 else if ( event == 'TASKS') {
                     const list = await task_list(db);
-                    const res : DownSocketMessage = { event: event, content: list }
+                    const res : DownSocketResponse = { event: event, content: list }
                     ws.send(JSON.stringify(res));
                 }
+                
                 else if ( event == 'ECHO' ) {
-                    const res : DownSocketMessage = { event: event, content: 'ECHO' }
+                    const res : DownSocketResponse = { event: event }
                     ws.send(JSON.stringify(res));
                 } 
             }

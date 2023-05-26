@@ -1,9 +1,10 @@
 import gallery from './gallery.ts';
 import remove from './remove.ts';
-import search from './search.ts';
 import { DB, Router } from '../_deps.ts';
+import search from "./search.ts";
 
 export { default as gallery_list } from './list.ts';
+export { default as search } from './search.ts';
 export default function lib_router(db:DB) {
     const router = new Router();
     router

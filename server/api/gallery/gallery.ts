@@ -10,10 +10,10 @@ export default async function handler(id:number, db : DB) {
     const exists = await ensureFile(join(config.catalog_dir,filename))
     if( exists ) {
         const list = await getFilenames(join(config.catalog_dir,filename));
-        return JSON.stringify({list:JSON.stringify(list)});
+        return {list:JSON.stringify(list)};
     }
     else {
-        return JSON.stringify({ status: false, message: 'Not Found' })
+        return { status: false, message: 'Not Found' }
     }
 }
 
