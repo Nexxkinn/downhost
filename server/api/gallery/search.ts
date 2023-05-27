@@ -8,6 +8,11 @@ type SearchParams = {
    db:DB
 }
 
+type QueryParams = {
+   limit: number,
+   offset?: number
+}
+
 export default async function handler({ query, offset, limit, db }: SearchParams){
     try {
         const { keywords } = parse(query);
@@ -71,6 +76,10 @@ export async function search(params: string[], offset:number, limit: number, db:
       for(const [i,id] of keyword_id.entries()) {
          kw_query += `SUM(tag_id IN (${id})) >= 1${i < keyword_id.length -1 ? ' AND\n' : ''}`
       }
+
+      const query_params : QueryParams = { limit };
+      if ( offset > 0 ) query_params.offset = offset;
+
       const query_offset = offset > 0 ? 'AND id < :offset' : '';
       const query  = db.query(`
          SELECT id,title 
@@ -81,9 +90,9 @@ export async function search(params: string[], offset:number, limit: number, db:
                   GROUP BY hash
                   HAVING ${kw_query} )
          ${query_offset}
-         ORDER by  id
+         ORDER by  id DESC
          LIMIT     :limit
-      `, { offset, limit })
+      `, query_params)
       /**
        * // add filtering for a proper tag exists
           AND

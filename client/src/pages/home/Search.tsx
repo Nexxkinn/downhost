@@ -1,8 +1,15 @@
+import type { SetStoreFunction } from "solid-js/store";
 import { req } from "./req";
 import { createSignal, createEffect } from 'solid-js';
+import type { DownSocketMessage, GalleryListParams, ListStorage } from ".";
 
-export function Search({setList,SetGalAutoRefresh, resetPage}) {
-    let submit, textfield;
+type SearchParams = {
+    setList: SetStoreFunction<ListStorage>,
+    socket_msg: (msg: DownSocketMessage) => void
+}
+
+export function Search({setList, socket_msg}:SearchParams) {
+    let submit:any, textfield:any;
 	const [input, setInput] = createSignal("");
 
     const submit_click = async (e) => {
@@ -10,25 +17,49 @@ export function Search({setList,SetGalAutoRefresh, resetPage}) {
         textfield.disabled = true;
         if (input().startsWith('http')) {
             const gql = await req({ api: 'task/add', body: { source: input() } });
-            console.log(gql);
+            console.debug(gql);
             textfield.value = "";
         }
         else {
             // search
-            const res = await req({ api: 'lib/search', body: { query: input() } })
-			SetGalAutoRefresh(false);
-            if (res.status && !res.status) {
-                console.debug('failed.', res.message);
-                setList('gallery', []);
-            }
-            else setList('gallery', res.list);
-            resetPage();
+            setList('gallery', (g) => {
+                g.offset = 0;
+                g.query  = input();
+                const msg : GalleryListParams  = {
+                    offset: g.offset,
+                    query: g.query
+                }
+                socket_msg({event:'LIST', content: msg})
+                return g
+            })
+            // const res = await req({ api: 'lib/search', body: { query: input() } })
+			// SetGalAutoRefresh(false);
+            // if (res.status && !res.status) {
+            //     console.debug('failed.', res.message);
+            //     setList('gallery', []);
+            // }
+            // else setList('gallery', res.list);
+            // resetPage();
         }
         submit.disabled = false;
         textfield.disabled = false;
     }
 
-    createEffect(() => { if(!input()) SetGalAutoRefresh(true) })
+    createEffect(() => {
+        if(!input()) return;
+        
+        setList('gallery', (g) => {
+            g.offset = 0;
+            g.query  = '';
+            g.list   = [];
+            const msg : GalleryListParams  = {
+                offset: g.offset,
+                query: g.query
+            }
+            socket_msg({event:'LIST', content: msg})
+            return g
+        })
+    })
 
     return <div class="form">
         <fast-text-field ref={textfield}

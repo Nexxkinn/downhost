@@ -2,7 +2,7 @@ import { req } from './req';
 import { del_icon, inf_icon } from "./icons";
 import { onMount, For, Show, createSignal, createEffect } from 'solid-js';
 import { createStore, produce } from "solid-js/store";
-import { DownSocketMessage, ListStorage } from '.';
+import { DownSocketMessage, ListStorage, PAGE_SIZE_LIMIT } from '.';
 
 type GallPanelArgs = {
     visible: boolean,
@@ -39,20 +39,19 @@ export function GallPanel({ visible = true, storage, socket_msg }:GallPanelArgs)
         const footer_obs = new IntersectionObserver((e, o) => {
             for (const entry of e) {
                 if ( entry.isIntersecting && !storage.gallery.is_end ) {
-                    console.debug('Downsocket event EXT_LIST executed')
-
                     const { offset, query } = storage.gallery;
+                    if ( !storage.socket_open && storage.gallery.list.length < PAGE_SIZE_LIMIT ) return;
+                    
+                    console.debug('Downsocket event EXT_LIST executed')
                     socket_msg({ event:'EXT_LIST',content:{ offset , query } as any}) // TODO: add types here
                 }
             }
         }, { threshold: 1 })
         footer_obs.observe(footer);
-
-        socket_msg({event:'LIST'});
     })
 
     return <div class="lib-list">
-        <For each={storage.gallery}>{({ id, title }, i) => {
+        <For each={storage.gallery.list}>{({ id, title }, i) => {
             let thumb, card;
             onMount(() => observer.observe(thumb));
             return <fast-card ref={card}>

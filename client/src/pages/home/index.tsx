@@ -2,7 +2,6 @@ import { req } from './req';
 import { render, Dynamic } from 'solid-js/web';
 import { createStore, modifyMutable, produce, reconcile } from "solid-js/store";
 import { onMount, createSignal, createEffect, For, Show } from 'solid-js';
-import styles from '../../styles/home.css';
 import {
     fastButton,
     fastTextField,
@@ -23,37 +22,44 @@ type Item = {
 }
 
 type DownItem = Item & {
-    size: number,
     status: number,
+    size: number,
     size_down: number
 }
 
 type GalleryListResult = {
     offset: number,
     is_end: boolean,
-    list: string
+    list: Item[]
+}
+
+export type GalleryListParams = {
+    offset: number,
+    query: string
 }
 
 export type DownSocketMessage = {
     event:string,
-    content?: GalleryListResult | DownSocketMessage
+    content?: GalleryListResult | GalleryListParams | DownSocketMessage
 }
 
 export type ListStorage = {
     type: 'gallery' | 'search' | 'down',
-    gallery: {
-        offset: number,
+    socket_open: boolean,
+    gallery: GalleryListParams & {
         is_end: boolean,
-        list: any[],
-        query: string
+        list: Item[]
     },
-    down: any[]
+    down: DownItem[]
 }
+
+export const PAGE_SIZE_LIMIT = 50;
 
 const isGListResult = (x:any): x is GalleryListResult => x.offset;
 
 const [storage, setStorage] = createStore<ListStorage>({ 
-    type:'gallery', 
+    type:'gallery',
+    socket_open: false,
     gallery: { offset:0, is_end:false, query:'', list: new Array<any>()},
     down: new Array<any>() 
 });
@@ -80,12 +86,12 @@ function Page() {
         const gal_click = () => {
             galtab.appearance = "accent";
             downtab.appearance = "stealth";
-            setPanel("gallery");
+            setStorage('type','gallery');
         }
         const down_click = () => {
             galtab.appearance = "stealth";
             downtab.appearance = "accent";
-            setPanel("down");
+            setStorage('type','down');
         }
         return <div class="nav">
             <fast-button ref={galtab}
@@ -103,13 +109,14 @@ function Page() {
         </div>
     };
 
-    createEffect( () => {
-        if (socket.readyState != socket.OPEN) return;
-        switch ( panel() ) {
-            case 'gallery' : { send({event:'LIST'}); break; }
-            case 'down'    : { send({event:'TASKS'}); break;}
-        }
-    })
+    // createEffect( () => {
+    //     const type = panel();
+    //     if ( socket.readyState !== socket.OPEN ) return;
+    //     switch ( type ) {
+    //         case 'gallery' : { send({event:'LIST', content: { offset:0, query: storage.gallery.query }}); break; }
+    //         case 'down'    : { send({event:'TASKS'}); break;}
+    //     }
+    // })
 
     onMount(async () => {
         provideFASTDesignSystem()
@@ -126,15 +133,17 @@ function Page() {
         baseLayerLuminance.setValueFor(document, 0.1);
 
         socket.onopen = () => {
-            console.log('Downsocket established');
+            console.debug('Downsocket established');
+            setStorage('socket_open',true);
+            send({event:'LIST', content: { offset:0, query: ''}});
         }
         socket.onclose = () => {
-            console.log('Downsocket closed')
+            console.debug('Downsocket closed')
         }
 
         socket.addEventListener('message', ({data} : MessageEvent<string>) => {
             const { event, content } : DownSocketMessage = JSON.parse(data);
-            console.debug({socket_event:event});
+            console.debug({data});
 
             if (isGListResult(content)) {
                 setStorage( 'gallery', produce( (g) => {
@@ -142,10 +151,10 @@ function Page() {
                     switch ( event ) {
                         case 'LIST':
                         case 'SEARCH' : {
-                            g.list    = JSON.parse(content.list) ; break;
+                            g.list    = content.list ; break;
                         }
                         case 'EXT_LIST' : {
-                            g.list.push(JSON.parse(content.list)); break;
+                            g.list.push(...content.list); break;
                         }
                     }
 
@@ -171,12 +180,12 @@ function Page() {
 
     return <>
         <Header />
-        <Search setList={setStorage} />
+        <Search setList={setStorage} socket_msg={send}/>
         <NavBar />
         <fast-divider />
-        <Dynamic component={panels[panel()]} />
+        <Dynamic component={panels[storage.type]} />
         <SettingsPanel />
     </>
 }
 
-render(() => <Page style={styles} />, document.getElementById('root') as HTMLElement);
+render(() => <Page/>, document.getElementById('root') as HTMLElement);

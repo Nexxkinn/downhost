@@ -43,6 +43,14 @@ export type Gallery = {
     title: string
 }
 
+export type Task = {
+    id:number,
+    title: string,
+    status: number,
+    size: number,
+    size_down: number
+}
+
 type GalleryListParams = {
     offset: number,
     query: string
@@ -54,6 +62,10 @@ type GalleryListResponse = {
     list: any[]
 }
 
+type TaskListResponse = {
+    list: Task[]
+}
+
 type DownSocketEvent = {
     event: string
 }
@@ -63,56 +75,56 @@ type DownSocketMessage  = DownSocketEvent & {
 }
 
 type DownSocketResponse = DownSocketEvent & {
-    content?: GalleryListResponse | DownSocketMessage
+    content?: GalleryListResponse | TaskListResponse | DownSocketMessage
 }
 
 function downsocket_router(db:DB) {
     const PAGE_SIZE_LIMIT = 50;
     const router = new Router();
-    router
-        .get('/wss', async (ctx) => {
-            // use websocket for gallery listing.
-            if (!ctx.isUpgradable) { ctx.throw(501) }
+    router.get('/wss', async (ctx) => {
+        // use websocket for gallery listing.
+        if (!ctx.isUpgradable) { ctx.throw(501) }
 
-            const ws = ctx.upgrade();
-            ws.onopen = () => { log(' Downsocket established ')}
-            ws.onmessage = async (m) => {
+        const ws = ctx.upgrade();
+        ws.onopen  = () => { log(' Downsocket established ') }
+        ws.onclose = () => { log(' DownSocket closed ') }
+        ws.onmessage = async (m) => {
 
-                const { event, content } : DownSocketMessage = JSON.parse(m.data);
+            const { event, content } : DownSocketMessage = JSON.parse(m.data);
 
-                if      ( content && ( event == 'LIST' || event == 'EXT_LIST') ) {
+            if      ( content && ( event == 'LIST' || event == 'EXT_LIST') ) {
 
-                    const { offset, query } = content as GalleryListParams;
+                const { offset, query } = content as GalleryListParams;
 
-                    const list = !query 
-                     ? await gallery_list({db, offset, limit: PAGE_SIZE_LIMIT})
-                     : await search({db, query,offset, limit: PAGE_SIZE_LIMIT});
+                log(JSON.stringify({offset,query}));
 
-                    if ( isError(list) ) {
-                        return ws.send(JSON.stringify({}));
-                    }
-                    const response : GalleryListResponse = {
-                        offset: list.at(-1)?.id || 0,
-                        is_end: list.length < PAGE_SIZE_LIMIT,
-                        list
-                    }
-                    const socket_response : DownSocketResponse = { event: event, content: response }
-                    ws.send(JSON.stringify(socket_response));
+                const list = !query 
+                    ? await gallery_list({db, offset, limit: PAGE_SIZE_LIMIT})
+                    : await search({db, query,offset, limit: PAGE_SIZE_LIMIT});
+
+                if ( isError(list) ) {
+                    return ws.send(JSON.stringify(list));
                 }
-                else if ( event == 'TASKS') {
-                    const list = await task_list(db);
-                    const res : DownSocketResponse = { event: event, content: list }
-                    ws.send(JSON.stringify(res));
+                const response : GalleryListResponse = {
+                    offset: list.at(-1)?.id || 0,
+                    is_end: list.length < PAGE_SIZE_LIMIT,
+                    list
                 }
-                
-                else if ( event == 'ECHO' ) {
-                    const res : DownSocketResponse = { event: event }
-                    ws.send(JSON.stringify(res));
-                } 
+                const socket_response : DownSocketResponse = { event: event, content: response }
+                ws.send(JSON.stringify(socket_response));
             }
-            ws.onclose = () => { log(' DownSocket closed ') }
-
-        })
+            else if ( event == 'TASKS') {
+                const list = await task_list(db);
+                const socket_response : DownSocketResponse = { event: event, content: { list } }
+                ws.send(JSON.stringify(socket_response));
+            }
+            
+            else if ( event == 'ECHO' ) {
+                const socket_response : DownSocketResponse = { event: event }
+                ws.send(JSON.stringify(socket_response));
+            } 
+        }
+    })
     
     return router;
 }
