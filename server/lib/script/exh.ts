@@ -2,6 +2,7 @@
 import { de, grab, DownMeta, PageRequest, DownType, DownPagesRequest, DownRequest, log, DownMetaArgs, DownTag } from "./_deps.ts";
 
 const token = de('klcjv4xqjv9a01snkla642xlkg9o04qj...');
+const s_token = de('klcjv4xqjv9a041rbe4of1srrdf6asqzrtqf...');
 const token2 = de('klcjv4xqjv9a01qzrtc6c41rby66f1srrdf6asqzrtqa0csrbda9fsqfklnm...');
 const regex_token = de('klcjv4xqjtrp09lzbe4of1srrdf6asqzrtqf...');
 const srvc = de('be4of1srrdf6a...');
@@ -26,7 +27,7 @@ export async function metadata({link,offset}:DownMetaArgs): Promise<DownMeta> {
 
   const title = grab('<div id="gd2"><h1 id="gn">', '</h1>', html);
   const length = Number(grab('Length:</td><td class="gdt2">', ' pages', html));
-  const thumb = token + '/t/' + grab('background:transparent url(' + token + '/t/', ') no-repeat">', html);
+  const thumb = s_token + '/t/' + grab('background:transparent url(' + s_token + '/t/', ') no-repeat">', html);
 
   // console.log({title, gallery_size, thumb})
 

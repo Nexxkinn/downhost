@@ -7,3 +7,4 @@ dist/
 catalog/
 test/
 lib/webui.ts
+webui_old/
