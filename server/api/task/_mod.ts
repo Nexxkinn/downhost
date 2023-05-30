@@ -6,14 +6,14 @@ export { default as task_list} from './list.ts';
 export default function task_router(db:DB) {
     const router = new Router();
     router
-        .post('/', async (ctx) => {
+        .post('add', async (ctx) => {
             const body = await ctx.request.body({ type: 'json' }).value;
-            return await task_add({ source: new URL(body.source), db });
+            ctx.response.body =  await task_add({ source: new URL(body.source), db });
         })
-        .patch('/:id/:function', async (ctx) => {
+        .patch(':id/:function', async (ctx) => {
             const id = Number(ctx.params.id);
             const func = String(ctx.params.function);
-            return await task_update(func,id, db);
+            ctx.response.body = await task_update(func,id, db);
         })
     
     return router;

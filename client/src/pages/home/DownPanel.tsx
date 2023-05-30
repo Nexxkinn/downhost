@@ -1,13 +1,18 @@
 import { req } from './req';
 import { del_icon, inf_icon } from "./icons";
 import { For, Show } from 'solid-js';
+import type { ListStorage } from '.';
 
-export function DownPanel({ list }) {
+type DownPanelParams = {
+    list: ListStorage
+}
+
+export function DownPanel({ list }: DownPanelParams) {
 
     const cancel = async(card:HTMLElement,id:number) => {
         // disable card
         card.style= "pointer-events: none; opacity: 0.50;";
-        const res = await req({ api:'task/cancel', body: { id } });
+        const res = await req({ api:`tasks/${id}/cancel`, method:'PATCH' });
 
         // release if failed.
         if(!res.status) card.style = '';

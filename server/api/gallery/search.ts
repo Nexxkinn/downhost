@@ -1,30 +1,34 @@
-import { DB } from '../_deps.ts';
-import { APIError, Gallery } from '../_mod.ts';
-
-type SearchParams = {
-   query: string,
-   offset: number,
-   limit: number,
-   db:DB
-}
+import type { DB, SearchListParams } from '../_deps.ts';
+import type { APIError, Gallery } from '../_mod.ts';
+import { query_id_filter } from "../utils.ts";
 
 type QueryParams = {
    limit: number,
    offset?: number
 }
 
-export default async function handler({ query, offset, limit, db }: SearchParams){
-    try {
-        const { keywords } = parse(query);
-        const list = await search(keywords, offset, limit, db);
-        return list;
-    }
-    catch (e) {
-        return { status: false, message: e.message } as APIError;
-    }
+/**
+    * wildcard keyword tag id search
+    * @param list keywords excluding tags
+    * @returns tag id for each keyword
+    */
+function get_id( db:DB, list: string[] ) {
+   if (list.length === 0) return [];
+
+   const tagid_list:string[] = [];
+   const query = `
+      SELECT GROUP_CONCAT(id) as tag_id
+      FROM   tagrepo
+      WHERE  tag LIKE ?`
+
+   for (const kw of list) {
+      for ( const [tag_id] of db.query<[string]>(query,['%'+kw+'%']) )
+         tagid_list.push(tag_id);
+   }
+   return tagid_list;
 }
 
-export async function search(params: string[], offset:number, limit: number, db:DB) {
+async function _search(params: string[], head:number, tail:number, limit: number, db:DB) {
 
    // parse tag with name
    // add keyword into title and tag search
@@ -34,37 +38,7 @@ export async function search(params: string[], offset:number, limit: number, db:
    // 
    // const { keywords } = parse(params);
 
-   /**
-    * wildcard keyword tag id search
-    * @param list keywords excluding tags
-    * @returns tag id for each keyword
-    */
-   const get_id = (list: string[]) => {
-      if (list.length === 0) return [];
-
-      const tagid_list:string[] = [];
-      const query = `
-         SELECT GROUP_CONCAT(id) as tag_id
-         FROM   tagrepo
-         WHERE  tag LIKE ?`
-
-      for (const kw of list) {
-         for ( const [tag_id] of db.query<[string]>(query,['%'+kw+'%']) )
-            tagid_list.push(tag_id);
-      }
-      return tagid_list;
-   }
-
-   const keyword_id = get_id(params);
-
-
-   // proper tag id search
-   /**
-    * SELECT id
-       FROM tagrepo
-       WHERE ns||':'||tag in ("male:mind_control","male:dilf")
-    */
-
+   const keyword_id = get_id( db, params );
 
    /**
     * Item search
@@ -77,10 +51,11 @@ export async function search(params: string[], offset:number, limit: number, db:
          kw_query += `SUM(tag_id IN (${id})) >= 1${i < keyword_id.length -1 ? ' AND\n' : ''}`
       }
 
+      const { offset, id_query_filter } = query_id_filter({head,tail})
+
       const query_params : QueryParams = { limit };
       if ( offset > 0 ) query_params.offset = offset;
 
-      const query_offset = offset > 0 ? 'AND id < :offset' : '';
       const query  = db.query(`
          SELECT id,title 
          FROM   catalog
@@ -89,10 +64,11 @@ export async function search(params: string[], offset:number, limit: number, db:
                   FROM tag
                   GROUP BY hash
                   HAVING ${kw_query} )
-         ${query_offset}
+         ${id_query_filter}
          ORDER by  id DESC
          LIMIT     :limit
       `, query_params)
+
       /**
        * // add filtering for a proper tag exists
           AND
@@ -103,6 +79,7 @@ export async function search(params: string[], offset:number, limit: number, db:
                      SUM(tag_id IN (21866)) >=1
          )
       */
+
       const res : Gallery[] = []
       for(const [id,title] of query) res.push({id,title} as Gallery);
       return res;
@@ -110,10 +87,6 @@ export async function search(params: string[], offset:number, limit: number, db:
 
    const result  = search(keyword_id);
    return result;
-}
-
-export async function tagsearch(tag: string) {
-
 }
 
 function parse(query: string) {
@@ -125,3 +98,15 @@ function parse(query: string) {
    // regex quotes
    // 
 }
+
+export default async function handler({ query, head, tail, limit, db }: SearchListParams){
+   try {
+       const { keywords } = parse(query);
+       const list = await _search(keywords, head, tail, limit, db);
+       return list;
+   }
+   catch (e) {
+       return { status: false, message: e.message } as APIError;
+   }
+}
+

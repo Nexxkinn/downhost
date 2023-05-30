@@ -1,17 +1,19 @@
 import { req } from './req';
 import { del_icon, inf_icon } from "./icons";
-import { onMount, For, Show, createSignal, createEffect } from 'solid-js';
-import { createStore, produce } from "solid-js/store";
+import { onMount, For, createEffect } from 'solid-js';
 import { DownSocketMessage, ListStorage, PAGE_SIZE_LIMIT } from '.';
+import { removeIndex } from '../../utils/lists';
+import { modifyMutable } from 'solid-js/store';
 
 type GallPanelArgs = {
     visible: boolean,
     storage: ListStorage,
+    remove_element: ( id: number ) => void,
     socket_msg: ( msg: DownSocketMessage) => void
 
 }
 
-export function GallPanel({ visible = true, storage, socket_msg }:GallPanelArgs) {
+export function GallPanel({ visible = true, storage, remove_element, socket_msg }:GallPanelArgs) {
     let footer:any, _pageLimitSize = 50;
 
     // lazy loading downhost thumbnails.
@@ -24,10 +26,11 @@ export function GallPanel({ visible = true, storage, socket_msg }:GallPanelArgs)
         }
     }, { threshold: 0, rootMargin: '100px 0px' });
 
-    const remove = async (card: HTMLElement, id: number) => {
+    const remove = async (card: HTMLElement, id: number, index:number) => {
         card.style = ` pointer-events: none; opacity: 0.50;`;
-        const res = await req({ api: 'lib/remove', body: { id } });
+        const res = await req({ api: `lib/g/${id}`, method:'DELETE' });
         if (!res.status) card.style = '';
+        else { remove_element(index) }
     }
 
     const info = (id: number) => {
@@ -39,11 +42,11 @@ export function GallPanel({ visible = true, storage, socket_msg }:GallPanelArgs)
         const footer_obs = new IntersectionObserver((e, o) => {
             for (const entry of e) {
                 if ( entry.isIntersecting && !storage.gallery.is_end ) {
-                    const { offset, query } = storage.gallery;
+                    const { tail, query } = storage.gallery;
                     if ( !storage.socket_open && storage.gallery.list.length < PAGE_SIZE_LIMIT ) return;
                     
                     console.debug('Downsocket event EXT_LIST executed')
-                    socket_msg({ event:'EXT_LIST',content:{ offset , query } as any}) // TODO: add types here
+                    socket_msg({ event:'EXT_LIST',content:{ head:0, tail , query } as any}) // TODO: add types here
                 }
             }
         }, { threshold: 1 })
@@ -51,7 +54,7 @@ export function GallPanel({ visible = true, storage, socket_msg }:GallPanelArgs)
     })
 
     return <div class="lib-list">
-        <For each={storage.gallery.list}>{({ id, title }, i) => {
+        <For each={storage.gallery.list}>{({ id, title }, index) => {
             let thumb, card;
             onMount(() => observer.observe(thumb));
             return <fast-card ref={card}>
@@ -78,7 +81,7 @@ export function GallPanel({ visible = true, storage, socket_msg }:GallPanelArgs)
                         class="item-button"
                         appearance="stealth"
                         title="Remove this gallery"
-                        onclick={()=> remove(card, id)}>
+                        onclick={()=> remove(card, id, index())}>
                         {del_icon}
                     </fast-button>
                     <div class="title" id="item-title" title={title}> {title} </div>

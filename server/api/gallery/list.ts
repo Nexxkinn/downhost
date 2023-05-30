@@ -1,12 +1,6 @@
-import { DB } from "../_deps.ts";
-import { APIError, Gallery } from "../_mod.ts";
-
-
-type GalleryListParams = {
-    db: DB,
-    offset: number
-    limit: number
-}
+import type { GalleryListParams } from "../_deps.ts";
+import type { APIError, Gallery } from "../_mod.ts";
+import { query_id_filter } from "../utils.ts";
 
 type QueryParams = {
     limit: number,
@@ -14,16 +8,25 @@ type QueryParams = {
 }
 
 // deno-lint-ignore require-await
-export default async function handler({ db, offset, limit }: GalleryListParams){
+export async function list({ db, head, tail, limit }: GalleryListParams){
     // TODO: Implement directory tagging system.
     try {
+
+        const { offset, id_query_filter } = query_id_filter({head,tail})
         
         const query_params : QueryParams = { limit };
         if ( offset > 0 ) query_params.offset = offset;
 
-        const query_offset = offset > 0 ? 'AND id < :offset' : '';
-        const query = db.prepareQuery(`SELECT id,title FROM catalog WHERE status=3 ${query_offset} ORDER BY id DESC LIMIT :limit`);
-        
+        const query = db.prepareQuery(`
+            SELECT  id,
+                    title
+            FROM    catalog
+            WHERE   status=3 
+                    ${id_query_filter} 
+            ORDER BY id DESC 
+            LIMIT :limit
+            `);
+
         const all_galleries = query.all(query_params);
         const list: Gallery[] = [];
         for( const [id,title] of all_galleries ) list.push({id,title} as Gallery);

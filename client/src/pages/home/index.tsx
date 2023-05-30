@@ -1,7 +1,6 @@
-import { req } from './req';
 import { render, Dynamic } from 'solid-js/web';
-import { createStore, modifyMutable, produce, reconcile } from "solid-js/store";
-import { onMount, createSignal, createEffect, For, Show } from 'solid-js';
+import { createStore, produce, reconcile } from "solid-js/store";
+import { onMount, createEffect } from 'solid-js';
 import {
     fastButton,
     fastTextField,
@@ -10,11 +9,12 @@ import {
     baseLayerLuminance,
     provideFASTDesignSystem
 } from "@microsoft/fast-components";
-import { del_icon, inf_icon, sett_icon } from "./icons";
+import { sett_icon } from "./icons";
 import { SettingsPanel } from "./SettingsPanel";
 import { DownPanel } from "./DownPanel";
 import { GallPanel } from "./GalleryPanel";
 import { Search } from "./Search";
+import { removeIndex } from '../../utils/lists';
 
 type Item = {
     id: number,
@@ -28,13 +28,19 @@ type DownItem = Item & {
 }
 
 type GalleryListResult = {
-    offset: number,
+    head: number,
+    tail: number,
     is_end: boolean,
     list: Item[]
 }
 
+type DownListResult = {
+    list: any[]
+}
+
 export type GalleryListParams = {
-    offset: number,
+    head: number,
+    tail: number,
     query: string
 }
 
@@ -44,7 +50,7 @@ export type DownSocketMessage = {
 }
 
 export type ListStorage = {
-    type: 'gallery' | 'search' | 'down',
+    type: 'gallery' | 'down',
     socket_open: boolean,
     gallery: GalleryListParams & {
         is_end: boolean,
@@ -55,21 +61,20 @@ export type ListStorage = {
 
 export const PAGE_SIZE_LIMIT = 50;
 
-const isGListResult = (x:any): x is GalleryListResult => x.offset;
+const isGListResult = (x:any): x is GalleryListResult => x.head || x.tail;
 
 const [storage, setStorage] = createStore<ListStorage>({ 
     type:'gallery',
     socket_open: false,
-    gallery: { offset:0, is_end:false, query:'', list: new Array<any>()},
+    gallery: { head:0, tail:0, is_end:false, query:'', list: new Array<any>()},
     down: new Array<any>() 
 });
 
 function Page() {
 
-    const [panel, setPanel] = createSignal("gallery");
-
     const socket = new WebSocket('ws://localhost:8080/api/wss');
     const send = (msg:DownSocketMessage) => {
+        if (!storage.socket_open) return;
         socket.send(JSON.stringify(msg));
     }
 
@@ -93,6 +98,7 @@ function Page() {
             downtab.appearance = "accent";
             setStorage('type','down');
         }
+
         return <div class="nav">
             <fast-button ref={galtab}
                 class="nav-button"
@@ -108,15 +114,6 @@ function Page() {
             </fast-button>
         </div>
     };
-
-    // createEffect( () => {
-    //     const type = panel();
-    //     if ( socket.readyState !== socket.OPEN ) return;
-    //     switch ( type ) {
-    //         case 'gallery' : { send({event:'LIST', content: { offset:0, query: storage.gallery.query }}); break; }
-    //         case 'down'    : { send({event:'TASKS'}); break;}
-    //     }
-    // })
 
     onMount(async () => {
         provideFASTDesignSystem()
@@ -134,8 +131,8 @@ function Page() {
 
         socket.onopen = () => {
             console.debug('Downsocket established');
-            setStorage('socket_open',true);
-            send({event:'LIST', content: { offset:0, query: ''}});
+            setStorage('socket_open',true); 
+            send({event:'LIST', content: { head:0, tail:0, query: ''}});
         }
         socket.onclose = () => {
             console.debug('Downsocket closed')
@@ -143,38 +140,79 @@ function Page() {
 
         socket.addEventListener('message', ({data} : MessageEvent<string>) => {
             const { event, content } : DownSocketMessage = JSON.parse(data);
-            console.debug({data});
+            console.debug({event});
 
             if (isGListResult(content)) {
-                setStorage( 'gallery', produce( (g) => {
-
-                    switch ( event ) {
-                        case 'LIST':
-                        case 'SEARCH' : {
-                            g.list    = content.list ; break;
-                        }
-                        case 'EXT_LIST' : {
-                            g.list.push(...content.list); break;
-                        }
+                switch ( event ) {
+                    case 'LIST':
+                    case 'SEARCH' : {
+                        setStorage( 'gallery', produce( (g) => {
+                            g.head = content.head;
+                            g.tail = content.tail;
+                            g.is_end = content.is_end;
+                            g.list   = content.list ;
+                        })); 
+                        break;
                     }
+                    case 'EXT_LIST' : {
+                        setStorage( 'gallery', produce( (g) => { 
+                            g.tail   = content.tail;
+                            g.is_end = content.is_end;
+                            g.list.push(...content.list); 
+                        })); 
+                        break;
+                    }
+                    case 'UPD_LIST' : {
+                        if ( content.list.length ==0 ) break;
 
-                    g.offset = content.offset;
-                    g.is_end = content.is_end;
-                }));
+                        setStorage( 'gallery', produce( (g) => { 
+                            g.head = content.head;
+                            g.list.unshift(...content.list);
+                        })); 
+                        break;
+                    }
+                }
             }
             // else if ( event == 'NEW_G') {
             //     let new_item:any = JSON.parse(content as any);
             //     setStorage( 'gallery','list',(stor) => [new_item,...stor])
             // }
             else if ( event == 'TASKS') {
-                setStorage( 'down', JSON.parse(content as any));
+                const { list } : DownListResult = content as any;
+                console.debug({list_tasks: list});
+                setStorage( 'down', reconcile(list) );
             }
         });
 
+        const refresh = async () => {
+            if ( !storage.socket_open ) return;
+            switch (storage.type) {
+                case "gallery": {
+                    const msg : GalleryListParams = {
+                        head: storage.gallery.head,
+                        tail: 0,
+                        query: storage.gallery.query
+                    }
+                    send({event:'UPD_LIST', content: msg});
+                    break;
+                }
+                case "down": {
+                    send({event:'TASKS'});
+                    break;
+                }
+            }
+        }
+
+        setInterval( refresh, 3000)
+
     })
 
+    const removeGalleryItemList = (index:number) => {
+        setStorage('gallery','list',(l) => removeIndex(l,index))
+    }
+
     const panels = {
-        "gallery": () => <GallPanel storage={storage} socket_msg={send} />,
+        "gallery": () => <GallPanel storage={storage} remove_element={removeGalleryItemList} socket_msg={send} />,
         "down": () => <DownPanel list={storage} />
     }
 

@@ -1,7 +1,7 @@
 import { DB, Router } from './_deps.ts';
 import { auth, log } from '../lib/_mod.ts';
 import task_router, { task_list } from './task/_mod.ts';
-import lib_router, { gallery_list, search } from './gallery/_mod.ts';
+import lib_router, { list, search } from './gallery/_mod.ts';
 
 export function api_router(db:DB) {
     const router = new Router();
@@ -52,12 +52,14 @@ export type Task = {
 }
 
 type GalleryListParams = {
-    offset: number,
+    head: number,
+    tail: number,
     query: string
 }
 
 type GalleryListResponse = {
-    offset: number,
+    head: number,
+    tail: number,
     is_end: boolean,
     list: any[]
 }
@@ -92,23 +94,24 @@ function downsocket_router(db:DB) {
 
             const { event, content } : DownSocketMessage = JSON.parse(m.data);
 
-            if      ( content && ( event == 'LIST' || event == 'EXT_LIST') ) {
+            if      ( content && ( event == 'LIST' || event == 'EXT_LIST' || event == 'UPD_LIST') ) {
 
-                const { offset, query } = content as GalleryListParams;
+                const { head, tail, query } = content as GalleryListParams;
 
-                log(JSON.stringify({offset,query}));
+                log(JSON.stringify({ head, tail, query }));
 
-                const list = !query 
-                    ? await gallery_list({db, offset, limit: PAGE_SIZE_LIMIT})
-                    : await search({db, query,offset, limit: PAGE_SIZE_LIMIT});
+                const g_list = !query 
+                    ? await list({db, head, tail, limit: PAGE_SIZE_LIMIT})
+                    : await search({db, query, head, tail, limit: PAGE_SIZE_LIMIT});
 
-                if ( isError(list) ) {
-                    return ws.send(JSON.stringify(list));
+                if ( isError(g_list) ) {
+                    return ws.send(JSON.stringify(g_list));
                 }
                 const response : GalleryListResponse = {
-                    offset: list.at(-1)?.id || 0,
-                    is_end: list.length < PAGE_SIZE_LIMIT,
-                    list
+                    head: g_list.at(0)?.id || 0,
+                    tail: g_list.at(-1)?.id || 0,
+                    is_end: g_list.length < PAGE_SIZE_LIMIT,
+                    list:g_list
                 }
                 const socket_response : DownSocketResponse = { event: event, content: response }
                 ws.send(JSON.stringify(socket_response));

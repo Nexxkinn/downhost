@@ -1,6 +1,6 @@
 import type { SetStoreFunction } from "solid-js/store";
 import { req } from "./req";
-import { createSignal, createEffect } from 'solid-js';
+import { createSignal, createEffect, onMount } from 'solid-js';
 import type { DownSocketMessage, GalleryListParams, ListStorage } from ".";
 
 type SearchParams = {
@@ -16,17 +16,18 @@ export function Search({setList, socket_msg}:SearchParams) {
         submit.disabled = true;
         textfield.disabled = true;
         if (input().startsWith('http')) {
-            const gql = await req({ api: 'task/add', body: { source: input() } });
+            const gql = await req({ api: 'tasks/add', body: { source: input() } });
             console.debug(gql);
             textfield.value = "";
         }
         else {
             // search
             setList('gallery', (g) => {
-                g.offset = 0;
+                g.tail = 0;
                 g.query  = input();
                 const msg : GalleryListParams  = {
-                    offset: g.offset,
+                    head: 0,
+                    tail: g.tail,
                     query: g.query
                 }
                 socket_msg({event:'LIST', content: msg})
@@ -44,22 +45,6 @@ export function Search({setList, socket_msg}:SearchParams) {
         submit.disabled = false;
         textfield.disabled = false;
     }
-
-    createEffect(() => {
-        if(!input()) return;
-        
-        setList('gallery', (g) => {
-            g.offset = 0;
-            g.query  = '';
-            g.list   = [];
-            const msg : GalleryListParams  = {
-                offset: g.offset,
-                query: g.query
-            }
-            socket_msg({event:'LIST', content: msg})
-            return g
-        })
-    })
 
     return <div class="form">
         <fast-text-field ref={textfield}
