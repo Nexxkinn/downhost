@@ -1,0 +1,1 @@
+export const webui:{[key: string]: string} = {}

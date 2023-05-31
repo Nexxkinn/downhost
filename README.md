@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <img src="webui/static/icon.png" alt="DownHost">
+  <img src="webui/src/public/icon.png" alt="DownHost">
   
   <br>
   <b>DownHost</b>

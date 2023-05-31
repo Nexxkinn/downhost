@@ -4,6 +4,8 @@ stages:
 
 pages:
   stage: gen
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
   script:
     - apk add yarn
     - cd webui
