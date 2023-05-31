@@ -12,6 +12,7 @@ pages:
     - cd ..
     - deno run --allow-read --allow-write .gitlab/client_compile.ts
     - mkdir public "public/$CI_COMMIT_SHORT_SHA/"
+    - cd "public/$CI_COMMIT_SHORT_SHA/" && mkdir api lib route && cd ../../
     - cd server
     - cp -r api/ lib/ route/ "public/$CI_COMMIT_SHORT_SHA/"
     - cp *.json *.ts "public/$CI_COMMIT_SHORT_SHA/"
