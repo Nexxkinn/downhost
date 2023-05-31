@@ -7,15 +7,15 @@ pages:
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
   script:
-    - apk add yarn
-    - cd webui
-    - yarn install
-    - yarn run build
+    - cd client
+    - deno task build
     - cd ..
     - deno run --allow-read --allow-write .gitlab/client_compile.ts
     - mkdir public "public/$CI_COMMIT_SHORT_SHA/"
-    - cp -r api/ cli/ lib/ route/ "public/$CI_COMMIT_SHORT_SHA/"
+    - cd server
+    - cp -r api/ lib/ route/ "public/$CI_COMMIT_SHORT_SHA/"
     - cp *.json *.ts "public/$CI_COMMIT_SHORT_SHA/"
+    - cd ..
     - echo "/downhost/dev/mod.ts /downhost/$CI_COMMIT_SHORT_SHA/mod.ts 302" > public/_redirects
     - echo "<html><head><title>Downhost:WIP</title></head><body></body></html>" > public/index.html
   artifacts:

@@ -14,12 +14,12 @@ async function scanClientDir() {
         }
 
     }
-    Deno.chdir('webui/dist')
+    Deno.chdir('client/dist')
     await scan('./');
     Deno.chdir('../../');
     
     const client_encoded = new TextEncoder().encode("export const webui:{[key: string]: string} = " + JSON.stringify(client) + ";");
-    await Deno.writeFile("lib/webui.ts",client_encoded);
+    await Deno.writeFile("server/lib/webui.ts",client_encoded);
 }
 
 async function compileFile(path:string){
