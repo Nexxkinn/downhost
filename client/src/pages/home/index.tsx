@@ -70,9 +70,17 @@ const [storage, setStorage] = createStore<ListStorage>({
     down: new Array<any>() 
 });
 
-function Page() {
+const create_websocket = () => {
+    // const host = window.location.hostname + ( window.location.port ? `:${window.location.port}` : '' ) ;
+    const ws_prot = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const host:string = document.baseURI.split('://')[1].split('?').shift();
+    const ws_api = (host.endsWith('/') ? '' : '/') + 'api/wss';
+    return new WebSocket( ws_prot + host + ws_api);
+}
 
-    const socket = new WebSocket('ws://localhost:8080/api/wss');
+function Page() {
+    
+    const socket = create_websocket();
     const send = (msg:DownSocketMessage) => {
         if (!storage.socket_open) return;
         socket.send(JSON.stringify(msg));
