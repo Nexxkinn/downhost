@@ -157,25 +157,29 @@ export async function metadata({link,offset}:DownMetaArgs): Promise<DownMeta> {
 }
 
 async function getCookie() {
-  const { u, p } = JSON.parse(Deno.readTextFileSync("auth.json"))['exh'];
-  const api = token2 + '?act=Login&CODE=01';
-
-  const form = new FormData();
-  form.append('referer', token2);
-  form.append('b', '');
-  form.append('bt', '');
-  form.append('UserName', u);
-  form.append('PassWord', p);
-  form.append('CookieDate', '1');
-
-  const login = await fetch(api, { method: 'POST', body: form });
-
-  const login_cookie = login.headers.get('Set-Cookie') || "";
-  const pass = grab('ipb_pass_hash=', ';', login_cookie);
-  const id = grab('ipb_member_id=', ';', login_cookie);
-
-  const cookie = `ipb_member_id=${id}; ipb_pass_hash=${pass};`;
+  const { i, h } = JSON.parse(Deno.readTextFileSync("auth.json"))['exh'];
+  const cookie = `ipb_member_id=${i}; ipb_pass_hash=${h};`;
   return cookie;
+
+  // unused.
+  // const api = token2 + '?act=Login&CODE=01';
+  //
+  // const form = new FormData();
+  // form.append('referer', token2);
+  // form.append('b', '');
+  // form.append('bt', '');
+  // form.append('UserName', u);
+  // form.append('PassWord', p);
+  // form.append('CookieDate', '1');
+  //
+  // const login = await fetch(api, { method: 'POST', body: form });
+  //
+  // const login_cookie = login.headers.get('Set-Cookie') || "";
+  // const pass = grab('ipb_pass_hash=', ';', login_cookie);
+  // const id = grab('ipb_member_id=', ';', login_cookie);
+  //
+  // const cookie = `ipb_member_id=${id}; ipb_pass_hash=${pass};`;
+  // return cookie;
 }
 
 function parseTags(html:string) {
