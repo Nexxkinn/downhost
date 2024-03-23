@@ -1,5 +1,5 @@
 import { join } from "https://deno.land/std@0.101.0/path/mod.ts";
-import { encode } from "https://deno.land/std/encoding/base64.ts";
+import { encodeBase64 } from "https://deno.land/std/encoding/base64.ts";
 
 async function scanClientDir() {
     let client:any = {};
@@ -25,7 +25,7 @@ async function scanClientDir() {
 async function compileFile(path:string){
     console.log('compiling: '+path);
     const file = await Deno.readFile(path);
-    return encode(file);
+    return encodeBase64(file);
 }
 
 await scanClientDir();
